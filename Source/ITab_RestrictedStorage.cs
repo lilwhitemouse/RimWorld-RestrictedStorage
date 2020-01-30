@@ -24,10 +24,12 @@ namespace RestrictedStorage
             var l = new Listing_Standard(GameFont.Small);
             l.Begin(position);
             CompRestrictedStorage crs=(this.SelThing as ThingWithComps).GetComp<CompRestrictedStorage>();
+            //TODO: move this logic to Comp:
             bool allowed=crs.AllowAll;
             l.CheckboxLabeled("Anyone May Take", ref allowed, null); //todo
             // Multiplayer would appreciate not spamming sync requests for setter, so we do this:
             if (allowed!=crs.AllowAll) crs.AllowAll=allowed;
+            crs.DisplayFineOptions(l);
             l.End();
         }
         // TODO: find some way of doing this:
