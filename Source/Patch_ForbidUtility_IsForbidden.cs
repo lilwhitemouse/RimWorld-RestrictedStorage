@@ -22,7 +22,6 @@ namespace RestrictedStorage
                 if (code[i].opcode==OpCodes.Call &&
                     code[i].operand==typeof(Verse.AI.Group.LordUtility)
                                        .GetMethod("GetLord", BindingFlags.Static | BindingFlags.Public)) {
-                    Log.Error("-----------------_FOUND IT");
                     // A Ldarg_1 was just called, so the Pawn is on the stack (to call GetLord)
                     // Also put the Thing t on the stack:
                     yield return new CodeInstruction(OpCodes.Ldarg_0); // Thing t
