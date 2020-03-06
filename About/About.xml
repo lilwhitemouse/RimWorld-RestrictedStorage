@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
 	<name>Restricted Storage</name>
-	<author>lilwhitemouse</author>
+	<author>Little White Mouse</author>
+    <packageId>LWM.RestrictedStorage</packageId>
 	<supportedVersions>
 		<li>1.0</li>
+        <li>1.1</li>
 	</supportedVersions>
-	<description>Restricted Storage</description>
+    <modDependencies>
+    <li>
+        <packageId>brrainz.harmony</packageId>
+        <displayName>Harmony</displayName>
+        <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+        <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+    </modDependencies>
+	<description>Restricted Storage allows you to restrict who can take things FROM storage.
+In the vanilla game, "storage" means Shelves.
+I use this with Deep Storage (my favorite storage mod, it's really awesome) but it should work with any storage buildings out there!</description>
 	<url>https://steamcommunity.com/id/lilwhitemouse/myworkshopfiles/?appid=294100</url>
 </ModMetaData>

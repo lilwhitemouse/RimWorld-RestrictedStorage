@@ -8,6 +8,7 @@ using Verse;
 using UnityEngine;
 using Verse.AI;
 using System.Diagnostics;
+using HarmonyLib;
 
 namespace RestrictedStorage
 {
@@ -15,7 +16,7 @@ namespace RestrictedStorage
   public class RestrictedStorage
   {
     static RestrictedStorage() {
-      var harmony = Harmony.HarmonyInstance.Create("net.littlewhitemouse.RimWorld.RestrictedStorage");
+      var harmony = new HarmonyLib.Harmony("net.littlewhitemouse.RimWorld.RestrictedStorage");
       harmony.PatchAll();
       // Add ITab and Comp to proper storage buildings:
       //   Add to all Building_Storage but not ones in Production (hoppers?)

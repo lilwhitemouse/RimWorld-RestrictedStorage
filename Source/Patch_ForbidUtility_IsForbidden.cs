@@ -8,11 +8,19 @@ using Verse;
 using UnityEngine;
 using Verse.AI;
 using System.Reflection.Emit; // for OpCodes in Harmony Transpiler
-using Harmony;
+using HarmonyLib;
 
-namespace RestrictedStorage
-{
-    [HarmonyPatch(typeof(RimWorld.ForbidUtility), "IsForbidden", new Type[] {typeof(Thing), typeof(Pawn)})]
+namespace RestrictedStorage {
+    // In RimWorld.ForbidUtility's bool IsForbidden(Thing t, Pawn pawn),
+    //   there are several tests for whether an item is forbidden
+    // After the 1st few tests, we insert our test right before the last:
+    // if (Patch_IsForbidden.IsInRestrictedStorage(pawn, t) //<----insert this test
+    //     { return true; }
+    // Lord lord = pawn.GetLord ();
+    // if (lord != null && lord.extraForbiddenThings.Contains (t)) {
+    //    return true;
+    // }
+[HarmonyPatch(typeof(RimWorld.ForbidUtility), "IsForbidden", new Type[] {typeof(Thing), typeof(Pawn)})]
     public static class Patch_IsForbidden {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,
                                                        ILGenerator generator) {
@@ -20,7 +28,7 @@ namespace RestrictedStorage
             for (int i=0; i<code.Count; i++) {
                 // Insert our test right before lord=pawn.GetLord();
                 if (code[i].opcode==OpCodes.Call &&
-                    code[i].operand==typeof(Verse.AI.Group.LordUtility)
+                    (MethodInfo)code[i].operand==typeof(Verse.AI.Group.LordUtility)
                                        .GetMethod("GetLord", BindingFlags.Static | BindingFlags.Public)) {
                     // A Ldarg_1 was just called, so the Pawn is on the stack (to call GetLord)
                     // Also put the Thing t on the stack:
