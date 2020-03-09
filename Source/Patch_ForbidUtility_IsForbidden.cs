@@ -29,7 +29,8 @@ namespace RestrictedStorage {
                 // Insert our test right before lord=pawn.GetLord();
                 if (code[i].opcode==OpCodes.Call &&
                     (MethodInfo)code[i].operand==typeof(Verse.AI.Group.LordUtility)
-                                       .GetMethod("GetLord", BindingFlags.Static | BindingFlags.Public)) {
+                                       .GetMethod("GetLord", BindingFlags.Static | BindingFlags.Public,
+                                       null,new Type[] { typeof(Pawn) },null)) {
                     // A Ldarg_1 was just called, so the Pawn is on the stack (to call GetLord)
                     // Also put the Thing t on the stack:
                     yield return new CodeInstruction(OpCodes.Ldarg_0); // Thing t
