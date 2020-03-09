@@ -14,7 +14,7 @@ namespace RestrictedStorage
     public class ITab_RestrictedStorage : ITab {
         public ITab_RestrictedStorage() {
             this.size=new Vector2(460f, 450f);
-            this.labelKey="Restriction"; //todo
+            this.labelKey = "LWM.RS.Restriction"; //.Translate(); //todo
         }
         protected override void FillTab() {
             //Text.Font = GameFont.Small;
