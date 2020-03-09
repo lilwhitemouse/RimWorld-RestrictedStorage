@@ -20,6 +20,17 @@ namespace RestrictedStorage
         public override void Initialize(CompProperties props) {
             base.Initialize(props);
         }
+        public override void PostDraw() {
+            base.PostDraw();
+            if (AllForbidden()) {
+                this.parent.Map.overlayDrawer.DrawOverlay(this.parent, OverlayTypes.ForbiddenBig);
+                return;
+            }
+            if (AnyForbidden()) {
+                this.parent.Map.overlayDrawer.DrawOverlay(this.parent, OverlayTypes.Forbidden);
+                return;
+            }
+        }
 
         //TODO: translate
         public void DisplayMainOption(Rect r) {
@@ -35,15 +46,25 @@ namespace RestrictedStorage
             if (AllowAll) {
                 GUI.color=Color.gray;
             }
+            //todo: maybe a bar showing what's actually selected?
             //Much todo:
-            l.Label("Who may take from here?");
+            l.Label("Who may take from here?"); // todo: or "These options have no effect right now"
             l.CheckboxLabeled("All Humans"/*-like*/, ref allowHumans, null);
-            l.CheckboxLabeled("All Animals", ref allowAnimals, null);
+            // cannibals
+            // non-cannials
+            // depressives
+            // non-depressives (chirpy people)
+            l.CheckboxLabeled("All animals", ref allowAnimals, null);
             Color d=GUI.color;
             if (d!=Color.gray && allowAnimals) { // gray options if animals are selected
                 GUI.color=Color.gray;
             }
-            l.CheckboxLabeled("  Herbivores?", ref allowHerbivores, null);
+            l.CheckboxLabeled("  that can graze (plant eaters)", ref allowGrazers, null);
+            l.CheckboxLabeled("  that cannot graze", ref allowNonGrazers, null);
+            l.CheckboxLabeled("  that can eat meat", ref allowMeatEaters, null);
+            l.CheckboxLabeled("  that cannot eat meat", ref allowNonMeatEaters, null);
+            l.CheckboxLabeled("  Herbivores? (probably going away)", ref allowHerbivores, null);
+            l.CheckboxLabeled("  Carnivores? (probably going away)", ref allowCarnivores, null);
             GUI.color=d;
             //if (AllowAll) {
             GUI.color=c;
@@ -52,9 +73,39 @@ namespace RestrictedStorage
 
         public override void PostExposeData() {
             Scribe_Values.Look(ref allowAll, "allowAll", true);
-            Scribe_Values.Look(ref allowHumans, "allowHumans", true);
-            Scribe_Values.Look(ref allowAnimals, "allowAnimals", true);
+            Scribe_Values.Look(ref allowHumans, "allowHumans", false);
+            Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
+            Scribe_Values.Look(ref allowGrazers, "allowGrazers", false);
+            Scribe_Values.Look(ref allowNonGrazers, "allowNonGrazers", false);
+            Scribe_Values.Look(ref allowMeatEaters, "allowMeatEaters", false);
+            Scribe_Values.Look(ref allowNonMeatEaters, "allowNonMeatEaters", false);
             Scribe_Values.Look(ref allowHerbivores, "allowHerbivores", false);
+            Scribe_Values.Look(ref allowCarnivores, "allowCarnivores", false);
+        }
+        bool AllForbidden() {
+            if (AllowAll) return false;
+            if (allowHumans) return false;
+            if (allowAnimals) return false;
+            if (allowGrazers) return false;
+            if (allowNonGrazers) return false;
+            if (allowMeatEaters) return false;
+            if (allowNonMeatEaters) return false;
+            return true;
+        }
+        bool AnyForbidden() {
+            if (allowAll) return false;
+            if (AllowAllHumans() && AllowAllAnimals()) return false;
+            return true;
+        }
+        bool AllowAllHumans() {
+            if (allowHumans) return true;
+            return false;
+        }
+        bool AllowAllAnimals() {
+            if (allowAnimals) return true;
+            if (allowGrazers && allowNonGrazers) return true;
+            if (allowMeatEaters && allowNonMeatEaters) return true;
+            return false;
         }
         public bool IsForbidden(Pawn p) {
             // obviously a lot to do here ;)
@@ -69,8 +120,29 @@ namespace RestrictedStorage
                 }
                 // Ugh.  Tree eaters.  They aren't Herbivorous.  They aren't Omniverous.  We can't
                 //   look them up by ResolvedDietCategory :/
+                if (allowGrazers && ((race.foodType & (FoodTypeFlags.Plant |
+                                                       FoodTypeFlags.Tree))>0)) {
+                    return false;
+                }
+                if (allowNonGrazers && ((race.foodType & (FoodTypeFlags.Plant |
+                                                       FoodTypeFlags.Tree)) == 0)) {
+                    return false;
+                }
+                if (allowMeatEaters && ((race.foodType & (FoodTypeFlags.CarnivoreAnimalStrict)) > 0)) {
+                    return false;
+                }
+                if (allowNonMeatEaters && ((race.foodType & (FoodTypeFlags.CarnivoreAnimalStrict)) == 0)) {
+                    return false;
+                }
                 if (allowHerbivores && !race.Eats(FoodTypeFlags.Meat)
                     && !race.Eats(FoodTypeFlags.AnimalProduct)) {
+                    return false;
+                }
+                //todo:
+                if (allowCarnivores && ((race.foodType & (FoodTypeFlags.VegetableOrFruit |
+                                                          FoodTypeFlags.Seed |
+                                                          FoodTypeFlags.Tree |
+                                                          FoodTypeFlags.Plant)) == 0)) {
                     return false;
                 }
                 // TODO: "Other" - prolly a mod setting
@@ -91,9 +163,15 @@ namespace RestrictedStorage
             set { allowAnimals=value; }
         }
         bool allowAll=true;
-        bool allowHumans=true;
-        bool allowAnimals=true;
+        bool allowHumans=false;
+        bool allowAnimals=false;
         bool allowHerbivores=false;
+        bool allowCarnivores = false;
+        bool allowGrazers = false;
+        bool allowNonGrazers = false;
+        bool allowMeatEaters = false;
+        bool allowNonMeatEaters = false;
+
     }
 
 }
