@@ -16,19 +16,22 @@ namespace RestrictedStorage
             this.size=new Vector2(460f, 450f);
             this.labelKey = "LWM.RS.Restriction"; //.Translate(); //todo
         }
+        private static Vector2 scrollPosition=new Vector2(0f,0f);
+        private static Rect viewRect=new Rect(0,0,100f,10000f); // I got scrollView in Listing_Standard to work!
         protected override void FillTab() {
-            //Text.Font = GameFont.Small;
-            Rect rect = new Rect(0f, 0f, this.size.x, this.size.y);
-            Rect position = rect.ContractedBy(10f);
-
-            var l = new Listing_Standard(GameFont.Small);
-            l.Begin(position);
+            Text.Font=GameFont.Medium;
             CompRestrictedStorage crs=(this.SelThing as ThingWithComps).GetComp<CompRestrictedStorage>();
-            Rect h=l.GetRect(22f);
-            h.xMax-=22f;
-            crs.DisplayMainOption(h);
+            Rect mainOptionRect=new Rect(10f, 10f, size.x-60f, 32f); // -10f for border, -40f for X to close the ITab
+            crs.DisplayMainOption(mainOptionRect);
+            Text.Font=GameFont.Small;
+
+            Widgets.DrawLineHorizontal(10f, 43f, size.y-20f);
+
+            Rect fineOptionsRect = new Rect(20f, 46f, this.size.x-35, this.size.y-50);
+            var l = new Listing_Standard(GameFont.Small);
+            l.BeginScrollView(fineOptionsRect, ref scrollPosition, ref viewRect);
             crs.DisplayFineOptions(l);
-            l.End();
+            l.EndScrollView(ref viewRect);
         }
     }
 

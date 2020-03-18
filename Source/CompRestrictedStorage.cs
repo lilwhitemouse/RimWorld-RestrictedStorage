@@ -45,34 +45,73 @@ namespace RestrictedStorage
             TooltipHandler.TipRegion(r, "Check this to allow anyone to take from this storage site.\nUncheck to allow only those specifically allowed to take things here.");
         }
 
+        /********************************************************
+         *
+         * Behavior:
+         * If user selects suboption, unselect header options.
+         *   Rationale: users will only select if they want
+         *     to be more specific, so save clicks.
+         *   (but only set header options to false if true -
+         *    reduce sync spam for multiplayer)
+         */
         public void DisplayFineOptions(Listing_Standard l) {
-            Color c=GUI.color;
+            Color origColor=GUI.color;
+            Log.Message("Color is "+GUI.color);
             if (AllowAll) {
                 GUI.color=Color.gray;
             }
-            //todo: maybe a bar showing what's actually selected?
+            //todo: maybe a bar showing what's actually selected?....??
             //Much todo:
+            // todo: make this label a button that shows who CAN take from here?
             l.Label("Who may take from here?"); // todo: or "These options have no effect right now"
-            l.CheckboxLabeled("All Humans"/*-like*/, ref allowHumans, null);
+
+            if (CheckboxChangedToTrue(l, "All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc")
+                && allowAll)
+                allowAll=false;
+
+                                      //l.CheckboxLabeled("All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc");
             // cannibals
             // non-cannials
             // depressives
             // non-depressives (chirpy people)
-            l.CheckboxLabeled("All animals", ref allowAnimals, null);
+            l.GapLine(2f);
+            //l.CheckboxLabeled("All animals", ref allowAnimals, "LWM.AllAnimalsDesc".Translate());
+            if (CheckboxChangedToTrue(l, "All animals", ref allowAnimals, "LWM.AllAnimalsDesc")
+                && allowAll)
+                allowAll=false;
             Color d=GUI.color;
             if (d!=Color.gray && allowAnimals) { // gray options if animals are selected
                 GUI.color=Color.gray;
             }
-            l.CheckboxLabeled("  that can graze (plant eaters)", ref allowGrazers, null);
-            l.CheckboxLabeled("  that cannot graze", ref allowNonGrazers, null);
-            l.CheckboxLabeled("  that can eat meat", ref allowMeatEaters, null);
-            l.CheckboxLabeled("  that cannot eat meat", ref allowNonMeatEaters, null);
+            if (
+                CheckboxChangedToTrue(l, "  that can graze (plant eaters)", ref allowGrazers, "LWM.AnimalsThatGrazeDesc") ||
+                CheckboxChangedToTrue(l, "  that cannot graze", ref allowNonGrazers, "LWM.AnimalsThatDoNotGrazeDesc") ||
+                CheckboxChangedToTrue(l, "  that can eat meat", ref allowMeatEaters, "LWM.AnimalsThatEatMeatDesc") ||
+                CheckboxChangedToTrue(l, "  that cannot eat meat", ref allowNonMeatEaters, "LWM.AnimalsThatDoNotEatMeatDesc")
+                //CheckboxChangedToTrue(l, ) ||
+                ) {
+                if (allowAll) allowAll=false;
+                if (allowAnimals) allowAnimals=false;
+            }
+            /*l.CheckboxLabeled("  that can graze (plant eaters)", ref allowGrazers, "LWM.AnimalsThatGrazeDesc".Translate());
+            l.CheckboxLabeled("  that cannot graze", ref allowNonGrazers, "LWM.AnimalsThatDoNotGrazeDesc".Translate());
+            l.CheckboxLabeled("  that can eat meat", ref allowMeatEaters, "LWM.AnimalsThatEatMeatDesc".Translate());
+            l.CheckboxLabeled("  that cannot eat meat", ref allowNonMeatEaters, "LWM.AnimalsThatDoNotEatMeatDesc".Translate());
+            */
             //l.CheckboxLabeled("  Herbivores? (probably going away)", ref allowHerbivores, null);
             //l.CheckboxLabeled("  Carnivores? (probably going away)", ref allowCarnivores, null);
             GUI.color=d;
             //if (AllowAll) {
-            GUI.color=c;
+            GUI.color=origColor;
             //}
+        }
+        // Helper function that does what it says on the box
+        private static bool CheckboxChangedToTrue(Listing_Standard l, string textKey, ref bool key, string tooltipKey) {
+            bool tmp=key;
+            l.CheckboxLabeled(textKey/*.Translate()TODO*/, ref key, tooltipKey.Translate());
+            if (tmp==false &&
+                key==true) return true;
+            return false;
         }
 
         public override void PostExposeData() {
@@ -96,7 +135,7 @@ namespace RestrictedStorage
             if (allowNonMeatEaters) return false;
             return true;
         }
-        bool AnyForbidden() {
+        bool AnyForbidden() {//TODO: maybe make this a flag?
             if (allowAll) return false;
             if (AllowAllHumans() && AllowAllAnimals()) return false;
             return true;
