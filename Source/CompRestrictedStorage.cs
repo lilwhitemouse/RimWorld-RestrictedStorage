@@ -16,6 +16,10 @@ namespace RestrictedStorage
         //   public override string TransformLabel(string label) {?????
         //   public override string CompInspectStringExtra() {
         //   Overlay!
+        //
+        //   Other (possible) restriction categories
+        //     cannibals (r)
+        //     animals restricted to zones (r)
 
         public override void Initialize(CompProperties props) {
             base.Initialize(props);
@@ -63,8 +67,8 @@ namespace RestrictedStorage
             l.CheckboxLabeled("  that cannot graze", ref allowNonGrazers, null);
             l.CheckboxLabeled("  that can eat meat", ref allowMeatEaters, null);
             l.CheckboxLabeled("  that cannot eat meat", ref allowNonMeatEaters, null);
-            l.CheckboxLabeled("  Herbivores? (probably going away)", ref allowHerbivores, null);
-            l.CheckboxLabeled("  Carnivores? (probably going away)", ref allowCarnivores, null);
+            //l.CheckboxLabeled("  Herbivores? (probably going away)", ref allowHerbivores, null);
+            //l.CheckboxLabeled("  Carnivores? (probably going away)", ref allowCarnivores, null);
             GUI.color=d;
             //if (AllowAll) {
             GUI.color=c;
@@ -79,8 +83,8 @@ namespace RestrictedStorage
             Scribe_Values.Look(ref allowNonGrazers, "allowNonGrazers", false);
             Scribe_Values.Look(ref allowMeatEaters, "allowMeatEaters", false);
             Scribe_Values.Look(ref allowNonMeatEaters, "allowNonMeatEaters", false);
-            Scribe_Values.Look(ref allowHerbivores, "allowHerbivores", false);
-            Scribe_Values.Look(ref allowCarnivores, "allowCarnivores", false);
+            //Scribe_Values.Look(ref allowHerbivores, "allowHerbivores", false);
+            //Scribe_Values.Look(ref allowCarnivores, "allowCarnivores", false);
         }
         bool AllForbidden() {
             if (AllowAll) return false;
@@ -134,7 +138,7 @@ namespace RestrictedStorage
                 if (allowNonMeatEaters && ((race.foodType & (FoodTypeFlags.CarnivoreAnimalStrict)) == 0)) {
                     return false;
                 }
-                if (allowHerbivores && !race.Eats(FoodTypeFlags.Meat)
+                /*if (allowHerbivores && !race.Eats(FoodTypeFlags.Meat)
                     && !race.Eats(FoodTypeFlags.AnimalProduct)) {
                     return false;
                 }
@@ -144,7 +148,7 @@ namespace RestrictedStorage
                                                           FoodTypeFlags.Tree |
                                                           FoodTypeFlags.Plant)) == 0)) {
                     return false;
-                }
+                }*/
                 // TODO: "Other" - prolly a mod setting
                 // TODO: robots etc?
             }
@@ -165,8 +169,8 @@ namespace RestrictedStorage
         bool allowAll=true;
         bool allowHumans=false;
         bool allowAnimals=false;
-        bool allowHerbivores=false;
-        bool allowCarnivores = false;
+        //bool allowHerbivores=false;
+        //bool allowCarnivores = false;
         bool allowGrazers = false;
         bool allowNonGrazers = false;
         bool allowMeatEaters = false;
