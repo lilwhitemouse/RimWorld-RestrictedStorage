@@ -15,6 +15,9 @@
         <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
     </li>
     </modDependencies>
+    <loadAfter>
+      <li>brrainz.harmony</li>
+    </loadAfter>
 	<description>Restricted Storage allows you to restrict who can take things FROM storage.
    
 THIS MOD IS A WORK IN PROGRESS, but I thought I would share.
