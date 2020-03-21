@@ -37,12 +37,27 @@ namespace RestrictedStorage
         }
 
         //TODO: translate
-        public void DisplayMainOption(Rect r) {
+        public void DisplayMainOption(Rect inRect) {
+            Rect r=new Rect(inRect.xMin, inRect.yMin, inRect.width, inRect.height/2);
+            bool tmp=allowAll;
             Widgets.CheckboxLabeled(r, "Anyone May Take?", ref allowAll);
             if (Mouse.IsOver(r)) {
                 Widgets.DrawHighlight(r);
             }
             TooltipHandler.TipRegion(r, "Check this to allow anyone to take from this storage site.\nUncheck to allow only those specifically allowed to take things here.");
+            if (allowAll && !tmp && allowNone) {
+                allowNone=false;
+            }
+            tmp=allowNone;
+            r=new Rect(inRect.xMin, inRect.yMin+inRect.height/2, inRect.width, inRect.height/2);
+            Widgets.CheckboxLabeled(r, "No one May Take?", ref allowNone);
+            if (Mouse.IsOver(r)) {
+                Widgets.DrawHighlight(r);
+            }
+            TooltipHandler.TipRegion(r, "If this is checked, NO ONE may take anything from here.  This overrides everything else.");
+            if (allowNone && !tmp && allowAll) {
+                allowAll=false;
+            }
         }
 
         /********************************************************
@@ -58,7 +73,7 @@ namespace RestrictedStorage
         private static float scrollViewHeight=1000f;
         public void DisplayFineOptions(Rect outerRect) {
             Color origColor=GUI.color;
-            if (AllowAll) {
+            if (allowAll || allowNone) {
                 GUI.color=Color.gray;
             }
             float y=0f;
@@ -71,19 +86,18 @@ namespace RestrictedStorage
             // todo: make this label a button that shows who CAN take from here?
             Widgets.Label(new Rect(0,0,w,22f),"Who may take from here?"); // todo: or "These options have no effect right now"
             y+=22f;
-            if (CheckboxChangedToTrue(ref y, w, "All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc")
-                && allowAll)
-                allowAll=false;
-
+            if (CheckboxChangedToTrue(ref y, w, "All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc")) {
+                noAllNone();
+            }
             // cannibals
             // non-cannials
             // depressives
             // non-depressives (chirpy people)?
             Widgets.DrawLineHorizontal(0, y+1, w);
             y+=2;
-            if (CheckboxChangedToTrue(ref y, w, "All animals", ref allowAnimals, "LWM.AllAnimalsDesc")
-                && allowAll)
-                allowAll=false;
+            if (CheckboxChangedToTrue(ref y, w, "All animals", ref allowAnimals, "LWM.AllAnimalsDesc")) {
+                noAllNone();
+            }
             Color d=GUI.color;
             if (d!=Color.gray && allowAnimals) { // gray options if animals are selected
                 GUI.color=Color.gray;
@@ -95,8 +109,7 @@ namespace RestrictedStorage
                 CheckboxChangedToTrue(ref y, w, "that cannot eat meat", ref allowNonMeatEaters, "LWM.AnimalsThatDoNotEatMeatDesc", 1)
                 //CheckboxChangedToTrue(ref y, w, ,1) ||
                 ) {
-                if (allowAll) allowAll=false;
-                if (allowNone) allowNone=false;
+                noAllNone();
                 if (allowAnimals) allowAnimals=false;
             }
             GUI.color=d;
@@ -137,6 +150,7 @@ namespace RestrictedStorage
 
         public override void PostExposeData() {
             Scribe_Values.Look(ref allowAll, "allowAll", true);
+            Scribe_Values.Look(ref allowNone, "allowNone", false);
             Scribe_Values.Look(ref allowHumans, "allowHumans", false);
             Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
             Scribe_Values.Look(ref allowGrazers, "allowGrazers", false);
@@ -160,8 +174,9 @@ namespace RestrictedStorage
                 Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "notThesePawns", LookMode.Reference, Array.Empty<object>());
 //            }
         }
-        bool AllForbidden() { //todo: update this once, keep in variable
-            if (AllowAll) return false;
+        bool AllForbidden() { //TODO: update this once, keep in variable
+            if (allowAll) return false;
+            if (allowNone) return true;
             if (allowHumans) return false;
             if (allowAnimals) return false;
             if (allowGrazers) return false;
@@ -175,6 +190,7 @@ namespace RestrictedStorage
         }
         bool AnyForbidden() {//TODO: maybe make this a flag?
             if (allowAll) return false;
+            if (allowNone) return true;
             if (AllowAllHumans() && AllowAllAnimals()) return false;
             if (!disallowedPawns.NullOrEmpty()) return false;
             return true;
@@ -192,6 +208,7 @@ namespace RestrictedStorage
         public bool IsForbidden(Pawn p) {
             // obviously a lot to do here ;)
             if (allowAll) return false;
+            if (allowNone) return true;
             RaceProperties race=p.RaceProps;
             if (allowHumans && race.Humanlike) return false;
             if (race.Animal) {
@@ -241,6 +258,7 @@ namespace RestrictedStorage
         public void AddAllowedArea(Area a) {
             if (allowedIfInAreas==null) allowedIfInAreas=new List<Area>();
             allowedIfInAreas.Add(a);
+            noAllNone();
         }
         public void RemoveAllowedArea(Area a) {
             if (allowedIfInAreas!=null) allowedIfInAreas.Remove(a);
@@ -250,6 +268,7 @@ namespace RestrictedStorage
         }
         public void AddAllowedNotInArea(Area a) {
             if (allowedIfNotInAreas==null) allowedIfNotInAreas=new List<Area>();
+            noAllNone();
         }
         public void RemoveAllowedNotInArea(Area a) {
             if (allowedIfNotInAreas!=null) allowedIfNotInAreas.Remove(a);
@@ -257,8 +276,18 @@ namespace RestrictedStorage
         public bool IsAllowedNotInArea(Area a) {
             return ((allowedIfNotInAreas!=null) && (allowedIfNotInAreas.Contains(a)));
         }
+        // When a lesser option is selected, turn off allowAll and allowNone:
+        //   (by using this super duper easy to type function!)
+        //   Why bother with the checks?  Wny not just "allowAll=false; allowNone=false;"?
+        //   Because Multiplayer has to syncronise those changes across all clients.
+        //   So only do it if we need to?  ...not that it happens often, so whatever.
+        //   it's habit now.
+        void noAllNone() {
+            if (allowAll) allowAll=false;
+            if (allowNone) allowNone=false;
+        }
 
-        public bool AllowAll {
+        /*public bool AllowAll {
             get { return allowAll; }
             set { allowAll=value; }
         }
@@ -269,9 +298,9 @@ namespace RestrictedStorage
         public bool AllowAnimals {
             get { return AllowAnimals; }
             set { allowAnimals=value; }
-        }
+        }*/
         bool allowAll=true;
-        bool allowNone=true;
+        bool allowNone=false;
         bool allowHumans=false;
         bool allowAnimals=false;
         //bool allowHerbivores=false;
