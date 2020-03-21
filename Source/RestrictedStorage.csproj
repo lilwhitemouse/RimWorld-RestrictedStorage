@@ -67,6 +67,7 @@
     <Compile Include="RestrictedStorage.cs" />
     <Compile Include="CompRestrictedStorage.cs" />
     <Compile Include="ITab_RestrictedStorage.cs" />
+    <Compile Include="Dialog_SpecifyAreas.cs" />
     <Compile Include="Patch_ForbidUtility_IsForbidden.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
