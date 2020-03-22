@@ -173,6 +173,11 @@ namespace RestrictedStorage
                 Scribe_Collections.Look<Pawn>(ref this.allowedPawns, "okPawns", LookMode.Reference, Array.Empty<object>());
                 Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "notThesePawns", LookMode.Reference, Array.Empty<object>());
 //            }
+                // clean up, just in case:
+                if (allowedIfInAreas!=null && allowedIfInAreas.Count==0) allowedIfInAreas=null;
+                if (allowedIfNotInAreas!=null && allowedIfNotInAreas.Count==0) allowedIfNotInAreas=null;
+                if (allowedPawns!=null && allowedPawns.Count==0) allowedPawns=null;
+                if (disallowedPawns!=null && disallowedPawns.Count==0) disallowedPawns=null;
         }
         bool AllForbidden() { //TODO: update this once, keep in variable
             if (allowAll) return false;
@@ -234,9 +239,10 @@ namespace RestrictedStorage
                     return false;
                 }
                 if (allowedIfInAreas!=null) {
+                    //Log.Message("Checking pawn "+p+" with area restirction "+p.playerSettings.AreaRestriction+" vs "+allowedIfInAreas[0]+" (count "+allowedIfInAreas.Count+")");
                     if (allowedIfInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
                 }
-                if (allowedIfNotInAreas!=null) {
+                if (!allowedIfNotInAreas.NullOrEmpty()) {
                     if (!allowedIfNotInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
                 }
                 /*if (allowHerbivores && !race.Eats(FoodTypeFlags.Meat)
@@ -252,6 +258,7 @@ namespace RestrictedStorage
                 }*/
                 // TODO: "Other" - prolly a mod setting
                 // TODO: robots etc?
+                //Log.Message("Checking animal "+p+" about to fail");
             }
             return true;
         }
