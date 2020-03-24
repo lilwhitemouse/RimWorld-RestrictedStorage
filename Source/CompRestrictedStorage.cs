@@ -330,6 +330,37 @@ namespace RestrictedStorage
             get { return AllowAnimals; }
             set { allowAnimals=value; }
         }*/
+        // does it have only default options:
+        public virtual bool IsDefault() {
+            if (allowNone || allowHumans || allowAnimals || allowGrazers || allowNonGrazers ||
+                allowMeatEaters || allowNonMeatEaters )
+                return false;
+            if (!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty() ||
+                !allowedPawns.NullOrEmpty() || !disallowedPawns.NullOrEmpty() )
+                return false;
+            return allowAll; //starts true
+        }
+        public virtual void CopyAllowancesFrom(CompRestrictedStorage other) {
+            this.allowAll=other.allowAll;
+            this.allowNone=other.allowNone;
+            this.allowHumans=other.allowHumans;
+            this.allowAnimals=other.allowAnimals;
+            this.allowGrazers=other.allowGrazers;
+            this.allowNonGrazers=other.allowNonGrazers;
+            this.allowMeatEaters=other.allowMeatEaters;
+            allowedIfInAreas=null;
+            if (other.allowedIfInAreas!=null)
+                allowedIfInAreas=new List<Area>(other.allowedIfInAreas);
+            allowedIfNotInAreas=null;
+            if (other.allowedIfNotInAreas!=null)
+                allowedIfNotInAreas=new List<Area>(other.allowedIfNotInAreas);
+            allowedPawns=null;
+            if (other.allowedPawns!=null)
+                allowedPawns=new List<Pawn>(allowedPawns);
+            disallowedPawns=null;
+            if (other.disallowedPawns!=null)
+                disallowedPawns=new List<Pawn>(disallowedPawns);
+        }
         bool allowAll=true;
         bool allowNone=false;
         bool allowHumans=false;

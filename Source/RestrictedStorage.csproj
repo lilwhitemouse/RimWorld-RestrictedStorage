@@ -69,6 +69,7 @@
     <Compile Include="ITab_RestrictedStorage.cs" />
     <Compile Include="Dialog_SpecifyAreas.cs" />
     <Compile Include="Patch_ForbidUtility_IsForbidden.cs" />
+    <Compile Include="Patch_StorageSettingsClipboard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
