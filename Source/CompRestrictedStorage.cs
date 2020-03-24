@@ -118,6 +118,30 @@ namespace RestrictedStorage
                 Find.WindowStack.Add(new Dialog_SpecifyAreas(this.parent.Map, this));
             y+=22f;
 //todo: add buttons / info here
+            bool needToRemove=false;
+            Area toRemove=null; // "null" is a valid Area
+            if (allowedIfInAreas != null) {
+                foreach (Area a in allowedIfInAreas) {
+                    bool tmp=true; // can do this MUCH better - with color!
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Anyone with area "+AreaUtility.AreaAllowedLabel_Area(a), ref tmp);
+                    y+=22f;
+                    if (!tmp) {
+                        toRemove=a; // can't remove things mid-foreach
+                        needToRemove=true;
+                    }
+                }
+                if (needToRemove) allowedIfInAreas.Remove(toRemove);
+            }
+            if (allowedIfNotInAreas!=null) { //oh hey, it's stupid to have more than one...whatever.
+                needToRemove=false;
+                foreach (Area a in allowedIfNotInAreas) {
+                    bool tmp=true; // can do this MUCH better - with color!
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Any area BESIDES "+AreaUtility.AreaAllowedLabel_Area(a), ref tmp);
+                    y+=22f;
+                    if (!tmp) toRemove=a;
+                }
+                if (needToRemove) allowedIfNotInAreas.Remove(toRemove);
+            }
             GUI.color=origColor;
             scrollViewHeight=y;
             Widgets.EndScrollView();
