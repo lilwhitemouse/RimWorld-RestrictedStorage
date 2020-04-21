@@ -60,6 +60,7 @@ namespace RestrictedStorage {
         static bool IsInRestrictedStorage(Pawn p, Thing t) {
             if (t==null) return false; // just making sure
             if (!t.Spawned) return false;
+            if (!t.def.EverStorable(false)) return false; //only forbid haulable things
             // Check everything for null all at once:
             //   if any of those are NULL, then it's not true, so it's not in restricted storage!
             if ( (t.Position.GetSlotGroup(t.Map)?.parent as ThingWithComps)?.GetComp<CompRestrictedStorage>()?.IsForbidden(p)==true) {
