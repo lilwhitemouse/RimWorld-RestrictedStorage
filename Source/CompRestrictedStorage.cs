@@ -173,29 +173,31 @@ namespace RestrictedStorage
         }
 
         public override void PostExposeData() {
-            Scribe_Values.Look(ref allowAll, "allowAll", true);
-            Scribe_Values.Look(ref allowNone, "allowNone", false);
-            Scribe_Values.Look(ref allowHumans, "allowHumans", false);
-            Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
-            Scribe_Values.Look(ref allowGrazers, "allowGrazers", false);
-            Scribe_Values.Look(ref allowNonGrazers, "allowNonGrazers", false);
-            Scribe_Values.Look(ref allowMeatEaters, "allowMeatEaters", false);
-            Scribe_Values.Look(ref allowNonMeatEaters, "allowNonMeatEaters", false);
+            //if (Scribe.mode==LoadSaveMode.Saving &&
+            //    this.IsDefault()) return;// don't bother saving.
+            Scribe_Values.Look(ref allowAll, "LWM_RS_allowAll", true);
+            Scribe_Values.Look(ref allowNone, "LWM_RS_allowNone", false);
+            Scribe_Values.Look(ref allowHumans, "LWM_RS_allowHumans", false);
+            Scribe_Values.Look(ref allowAnimals, "LWM_RS_allowAnimals", false);
+            Scribe_Values.Look(ref allowGrazers, "LWM_RS_allowGrazers", false);
+            Scribe_Values.Look(ref allowNonGrazers, "LWM_RS_allowNonGrazers", false);
+            Scribe_Values.Look(ref allowMeatEaters, "LWM_RS_allowMeatEaters", false);
+            Scribe_Values.Look(ref allowNonMeatEaters, "LWM_RS_allowNonMeatEaters", false);
             // need to have this called both during loading vars and during cross-reference
             //   so cannot firewall it behind a variable that disappears after Scribe.mode of LoadingVars
 //            bool tmp=(allowedIfInAreas !=null || allowedIfNotInAreas!=null);
 //            bool tmp=(!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty());
 //            Scribe_Values.Look(ref tmp, "areas", false);
 //            if (tmp) {
-                Scribe_Collections.Look<Area>(ref this.allowedIfInAreas, false, "areaIfIn", LookMode.Reference, Array.Empty<object>());
-                Scribe_Collections.Look<Area>(ref this.allowedIfNotInAreas, false, "areaIfNotIn", LookMode.Reference, Array.Empty<object>());
+                Scribe_Collections.Look<Area>(ref this.allowedIfInAreas, false, "LWM_RS_areaIfIn", LookMode.Reference, Array.Empty<object>());
+                Scribe_Collections.Look<Area>(ref this.allowedIfNotInAreas, false, "LWM_RS_areaIfNotIn", LookMode.Reference, Array.Empty<object>());
 //                Log.Message("allowed if in areas is "+(allowedIfInAreas==null?"NULL":allowedIfInAreas.Count.ToString())+", mode "+Scribe.mode);
 //            }
 //            tmp=(allowedPawns!=null || disallowedPawns!=null);
 //            Scribe_Values.Look(ref tmp, "pawns", false);
 //            if (tmp) {
-                Scribe_Collections.Look<Pawn>(ref this.allowedPawns, "okPawns", LookMode.Reference, Array.Empty<object>());
-                Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "notThesePawns", LookMode.Reference, Array.Empty<object>());
+                Scribe_Collections.Look<Pawn>(ref this.allowedPawns, "LWM_RS_okPawns", LookMode.Reference, Array.Empty<object>());
+                Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "LWM_RS_notThesePawns", LookMode.Reference, Array.Empty<object>());
 //            }
                 // clean up, just in case:
                 if (allowedIfInAreas!=null && allowedIfInAreas.Count==0) allowedIfInAreas=null;
