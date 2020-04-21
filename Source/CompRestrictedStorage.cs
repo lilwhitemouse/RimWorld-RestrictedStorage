@@ -239,6 +239,7 @@ namespace RestrictedStorage
         public bool IsForbidden(Pawn p) {
             // obviously a lot to do here ;)
             if (allowAll) return false;
+            if (p.Faction!=Faction.OfPlayer) return false;
             if (allowNone) return true;
             RaceProperties race=p.RaceProps;
             if (allowHumans && race.Humanlike) return false;
