@@ -21,7 +21,7 @@ namespace RestrictedStorage
                 if (origComp==null || origComp.IsDefault()) return;
                 crs=new CompRestrictedStorage();
                 crs.CopyAllowancesFrom(origComp);
-                Log.Warning("Copying restrictions from "+building);
+                //Log.Warning("Copying restrictions from "+building);
             }
         }
         public static CompRestrictedStorage crs=null;
@@ -33,14 +33,16 @@ namespace RestrictedStorage
             if ((building=(s.owner as Building_Storage))!=null) {
                 var oldcrs=building.GetComp<CompRestrictedStorage>();
                 if (oldcrs!=null) building.AllComps.Remove(oldcrs);
-                if (Patch_StorageSettingsClipboard_Copy.crs!=null) {
-                    CompRestrictedStorage newcrs=new CompRestrictedStorage();
-                    newcrs.parent=building;
-                    newcrs.Initialize(null);
-                    building.AllComps.Add(newcrs);
+                // would like to not bother with comp if is defaults, but...
+                //if (Patch_StorageSettingsClipboard_Copy.crs!=null) {
+                CompRestrictedStorage newcrs=new CompRestrictedStorage();
+                newcrs.parent=building;
+                newcrs.Initialize(null);
+                building.AllComps.Add(newcrs);
+                if (Patch_StorageSettingsClipboard_Copy.crs!=null)
                     newcrs.CopyAllowancesFrom(Patch_StorageSettingsClipboard_Copy.crs);
-                    Log.Message("Copying restictions to "+building);
-                }
+                //Log.Message("Copying restictions to "+building);
+                //}
             }
         }
     }

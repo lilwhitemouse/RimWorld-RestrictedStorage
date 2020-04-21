@@ -33,6 +33,11 @@ namespace RestrictedStorage
           //     <li>
           //       <compClass>CompRestrictedStorage</compClass>etc
           b.comps.Add(new CompProperties {compClass=typeof(CompRestrictedStorage)});
+          // but....we don't actually want to add this comp to EVERYTHING - I mean, why
+          // bother?  It's not going to be used in the majority of cases.  Except...
+          // the game won't load save-game-data unless the comp is already there.  Yes...
+          //
+          // On the other hand, we DO want to use the ITab for all storage buildings:
           // This mirrors ThingDef's resolve references - I didn't want to take the time
           //   to do a ResolveReferences for every single ThingDef, but if anything
           //   breaks, that's always an option...
