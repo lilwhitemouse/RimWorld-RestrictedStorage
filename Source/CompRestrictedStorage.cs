@@ -351,6 +351,7 @@ namespace RestrictedStorage
             this.allowGrazers=other.allowGrazers;
             this.allowNonGrazers=other.allowNonGrazers;
             this.allowMeatEaters=other.allowMeatEaters;
+            this.allowNonMeatEaters=other.allowNonMeatEaters;
             allowedIfInAreas=null;
             if (other.allowedIfInAreas!=null)
                 allowedIfInAreas=new List<Area>(other.allowedIfInAreas);
