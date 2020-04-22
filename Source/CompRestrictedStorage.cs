@@ -302,6 +302,7 @@ namespace RestrictedStorage
         }
         public void AddAllowedNotInArea(Area a) {
             if (allowedIfNotInAreas==null) allowedIfNotInAreas=new List<Area>();
+            allowedIfNotInAreas.Add(a);
             noAllNone();
         }
         public void RemoveAllowedNotInArea(Area a) {
