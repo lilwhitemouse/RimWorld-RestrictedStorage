@@ -63,7 +63,7 @@ namespace RestrictedStorage {
             if (!t.def.EverStorable(false)) return false; //only forbid haulable things
             // Check everything for null all at once:
             //   if any of those are NULL, then it's not true, so it's not in restricted storage!
-            if ( (t.Position.GetSlotGroup(t.Map)?.parent as ThingWithComps)?.GetComp<CompRestrictedStorage>()?.IsForbidden(p)==true) {
+            if ( (t.Position.GetSlotGroup(t.Map)?.parent as ThingWithComps)?.GetComp<CompRestrictedStorage>()?.IsForbidden(p,t)==true) {
                 return true;
             }
             return false;

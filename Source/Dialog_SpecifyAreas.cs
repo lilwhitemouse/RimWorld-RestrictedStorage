@@ -20,7 +20,7 @@ namespace RestrictedStorage
             this.closeOnClickedOutside=true;
             this.forcePause=true;
             this.resizeable=true;
-            this.optionalTitle="Test title";
+            this.optionalTitle="Specify Access Control by Area";
         }
         public override void DoWindowContents(Rect inRect) { //todo: much better info
             float y=0f;

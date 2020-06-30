@@ -32,17 +32,31 @@ namespace RestrictedStorage
           //   <comps>
           //     <li>
           //       <compClass>CompRestrictedStorage</compClass>etc
-          b.comps.Add(new CompProperties {compClass=typeof(CompRestrictedStorage)});
+          if (b.comps!=null) {
+              b.comps.Add(new CompProperties {compClass=typeof(CompRestrictedStorage)});
+          } else {
+              Log.Message("LWM.Restricted Storage: "+b+" does not have comps");
+              continue;
+          }
           // but....we don't actually want to add this comp to EVERYTHING - I mean, why
           // bother?  It's not going to be used in the majority of cases.  Except...
           // the game won't load save-game-data unless the comp is already there.  Yes...
+          // So we do add it to everything.
           //
           // On the other hand, we DO want to use the ITab for all storage buildings:
           // This mirrors ThingDef's resolve references - I didn't want to take the time
           //   to do a ResolveReferences for every single ThingDef, but if anything
           //   breaks, that's always an option...
-          b.inspectorTabs.Add(typeof(ITab_RestrictedStorage));
-          b.inspectorTabsResolved.Add(itabResolved);
+          if (b.inspectorTabs != null) {
+              b.inspectorTabs.Add(typeof(ITab_RestrictedStorage));
+              if (b.inspectorTabsResolved != null) {
+                  b.inspectorTabsResolved.Add(itabResolved);
+              } else {
+                  Log.Message("LWM.Restricted Storage: "+b+" does not have inspectorTabsResolved");
+              }
+          } else {
+              Log.Message("LWM.Restricted Storage: "+b+" does not have inspectorTabs");
+          }
       }
     }
   }

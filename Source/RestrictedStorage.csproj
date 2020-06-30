@@ -14,9 +14,10 @@
     <ReleaseVersion>1.1.0.1</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>false</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;</DefineConstants>
     <OutputPath>..\1.1\Assemblies</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -68,8 +69,10 @@
     <Compile Include="CompRestrictedStorage.cs" />
     <Compile Include="ITab_RestrictedStorage.cs" />
     <Compile Include="Dialog_SpecifyAreas.cs" />
+    <Compile Include="Dialog_SpecifyPawns.cs" />
     <Compile Include="Patch_ForbidUtility_IsForbidden.cs" />
     <Compile Include="Patch_StorageSettingsClipboard.cs" />
+    <Compile Include="Patch_Building_Storage-Notify.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

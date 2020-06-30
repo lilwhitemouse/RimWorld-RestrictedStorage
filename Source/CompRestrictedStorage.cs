@@ -142,6 +142,33 @@ namespace RestrictedStorage
                 }
                 if (needToRemove) allowedIfNotInAreas.Remove(toRemove);
             }
+            if (Widgets.ButtonText(new Rect(0,y,w,22), "Pawn control"))
+                Find.WindowStack.Add(new Dialog_SpecifyPawns(this));
+            y+=22f;
+            Pawn pawnToRemove=null;
+            if (allowedPawns != null) {
+                foreach (Pawn p in allowedPawns) {
+                    bool tmp=true;
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Allowed: "+p.Name, ref tmp);
+                    y+=22;
+                    if (!tmp) {
+                        pawnToRemove=p; // can't remove things mid-foreach
+                    }
+                }
+                if (pawnToRemove!=null) allowedPawns.Remove(pawnToRemove);
+            }
+            if (disallowedPawns != null) {
+                pawnToRemove=null;
+                foreach (Pawn p in disallowedPawns) {
+                    bool tmp=true;
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "NOT allowed: "+p.Name, ref tmp);
+                    y+=22;
+                    if (!tmp) {
+                        pawnToRemove=p; // can't remove things mid-foreach
+                    }
+                }
+                if (pawnToRemove!=null) disallowedPawns.Remove(pawnToRemove);
+            }
             GUI.color=origColor;
             scrollViewHeight=y;
             Widgets.EndScrollView();
@@ -170,6 +197,40 @@ namespace RestrictedStorage
             if (tmp==false &&
                 key==true) return true;
             return false;
+        }
+        // Sometimes items that should not be in storage end up there
+        //  (for example, butchering really close to shelves that should not hold anything
+        //  can still fill them with leather)
+        // Check for incorrect items when items are added to the Building_Storage
+        //   (or when the player asks for it via Gizmo?)
+        // If there are incorrect items, then the IsForbidden check can look for them,
+        //   otherwise, it shouldn't bother checking ('cause that's overhead no one needs)
+        // (Note: this will still fail in some cases - for example, with Deep Storage,
+        //  if a storage unit is over capacity, pawns should take the stuff away, but
+        //  that is logic specific to DS, and the items will simply be counted as
+        //  forbidden here)
+        public void CheckForIncorrectItems() {
+            #if DEBUG
+            Log.Message(""+parent+": checking for incorrect items");
+            #endif
+            shouldCheckForIncorrectItems=false;
+            hasIncorrectItemsCounter=0;
+            StorageSettings settings=(parent as IStoreSettingsParent)?.GetStoreSettings();
+            if (settings==null) {
+                Log.Warning("LWM Restricted Storage: "+parent+" failed to find storage settings - this is bad?");
+                return;
+            }
+            foreach (IntVec3 c in (parent as ISlotGroupParent).AllSlotCells()) {
+                foreach (Thing t in parent.Map.thingGrid.ThingsAt(c)) {
+                    if (t.def.EverStorable(false) && !settings.AllowedToAccept(t)) {
+                        #if DEBUG
+                        Log.Message("  found incorrect thing "+t);
+                        #endif
+                        hasIncorrectItemsCounter=1;
+                        return;
+                    }
+                }
+            }
         }
 
         public override void PostExposeData() {
@@ -227,20 +288,47 @@ namespace RestrictedStorage
             return true;
         }
         bool AllowAllHumans() {
+            // todo: disallowedPawns?
             if (allowHumans) return true;
             return false;
         }
         bool AllowAllAnimals() {
+            // todo: disallowedPawns?
             if (allowAnimals) return true;
             if (allowGrazers && allowNonGrazers) return true;
             if (allowMeatEaters && allowNonMeatEaters) return true;
             return false;
         }
-        public bool IsForbidden(Pawn p) {
+        public bool IsForbidden(Pawn p, Thing t=null) {
             // obviously a lot to do here ;)
             if (allowAll) return false;
             if (p.Faction!=Faction.OfPlayer) return false;
+            if (shouldCheckForIncorrectItems) CheckForIncorrectItems();
+            // if thing t shouldn't be stored here, don't forbid it:
+            if (hasIncorrectItemsCounter>0) {
+                // a bit of logic to not ALWAYS check
+                // Buildings_Storage don't tick, so
+                // we need some logic to check from
+                // time to time...
+                // but we don't want to be checking
+                // always if there are 8494 items in
+                // storage...which happens.
+                hasIncorrectItemsCounter++;
+                if (hasIncorrectItemsCounter>100) // sure??
+                    CheckForIncorrectItems();
+                #if DEBUG
+                Log.Message(""+parent+" is checking if "+t+" is allowed; Counter is at "+
+                            hasIncorrectItemsCounter);
+                #endif
+                // actual check:
+                if (t!=null &&
+                    !((parent as IStoreSettingsParent).GetStoreSettings().AllowedToAccept(t))) return false;
+            }
             if (allowNone) return true;
+            //////////////////////////// Fine Logic /////////////////////////
+            if (disallowedPawns!=null) {
+                if (disallowedPawns.Contains(p)) return true;
+            }
             RaceProperties race=p.RaceProps;
             if (allowHumans && race.Humanlike) return false;
             if (race.Animal) {
@@ -265,30 +353,34 @@ namespace RestrictedStorage
                 if (allowNonMeatEaters && ((race.foodType & (FoodTypeFlags.CarnivoreAnimalStrict)) == 0)) {
                     return false;
                 }
-                if (allowedIfInAreas!=null) {
-                    //Log.Message("Checking pawn "+p+" with area restirction "+p.playerSettings.AreaRestriction+" vs "+allowedIfInAreas[0]+" (count "+allowedIfInAreas.Count+")");
-                    if (allowedIfInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
-                }
-                if (!allowedIfNotInAreas.NullOrEmpty()) {
-                    if (!allowedIfNotInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
-                }
-                /*if (allowHerbivores && !race.Eats(FoodTypeFlags.Meat)
-                    && !race.Eats(FoodTypeFlags.AnimalProduct)) {
-                    return false;
-                }
-                //todo:
-                if (allowCarnivores && ((race.foodType & (FoodTypeFlags.VegetableOrFruit |
-                                                          FoodTypeFlags.Seed |
-                                                          FoodTypeFlags.Tree |
-                                                          FoodTypeFlags.Plant)) == 0)) {
-                    return false;
-                }*/
-                // TODO: "Other" - prolly a mod setting
-                // TODO: robots etc?
                 //Log.Message("Checking animal "+p+" about to fail");
+            } // end animals
+            if (allowedPawns!=null) {
+                if (allowedPawns.Contains(p)) return false;
             }
+            if (allowedIfInAreas!=null) {
+                //Log.Message("Checking pawn "+p+" with area restirction "+p.playerSettings.AreaRestriction+" vs "+allowedIfInAreas[0]+" (count "+allowedIfInAreas.Count+")");
+                if (allowedIfInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
+            }
+            if (!allowedIfNotInAreas.NullOrEmpty()) {
+                if (!allowedIfNotInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
+            }
+            // TODO: "Other" - prolly a mod setting
+            // TODO: robots etc?
             return true;
         }
+
+        // When a lesser option is selected, turn off allowAll and allowNone:
+        //   (by using this super duper easy to type function!)
+        //   Why bother with the checks?  Wny not just "allowAll=false; allowNone=false;"?
+        //   Because Multiplayer has to syncronise those changes across all clients.
+        //   So only do it if we need to?  ...not that it happens often, so whatever.
+        //   it's habit now.
+        void noAllNone() {
+            if (allowAll) allowAll=false;
+            if (allowNone) allowNone=false;
+        }
+        //// Outside access for Areas and Pawns (dialogs mostly):
         public void AddAllowedArea(Area a) {
             if (allowedIfInAreas==null) allowedIfInAreas=new List<Area>();
             allowedIfInAreas.Add(a);
@@ -311,16 +403,27 @@ namespace RestrictedStorage
         public bool IsAllowedNotInArea(Area a) {
             return ((allowedIfNotInAreas!=null) && (allowedIfNotInAreas.Contains(a)));
         }
-        // When a lesser option is selected, turn off allowAll and allowNone:
-        //   (by using this super duper easy to type function!)
-        //   Why bother with the checks?  Wny not just "allowAll=false; allowNone=false;"?
-        //   Because Multiplayer has to syncronise those changes across all clients.
-        //   So only do it if we need to?  ...not that it happens often, so whatever.
-        //   it's habit now.
-        void noAllNone() {
-            if (allowAll) allowAll=false;
-            if (allowNone) allowNone=false;
+        public void AddAllowedPawn(Pawn p) {
+            if (allowedPawns==null) allowedPawns=new List<Pawn>();
+            allowedPawns.Add(p);
+            noAllNone();
         }
+        public void RemoveAllowedPawn(Pawn p) {
+            allowedPawns?.Remove(p);
+        }
+        public bool IsAllowedPawn(Pawn p) {
+            return (allowedPawns?.Contains(p)==true);
+        }
+        public void AddDisallowedPawn(Pawn p) {
+            if (disallowedPawns==null) disallowedPawns=new List<Pawn>();
+            disallowedPawns.Add(p);
+            noAllNone();
+        }
+        public void RemoveDisallowedPawn(Pawn p) {
+            disallowedPawns?.Remove(p);
+        }
+        // my patience for typing has gone down:
+        public bool IsDisallowedPawn(Pawn p) => (disallowedPawns?.Contains(p)==true);
 
         /*public bool AllowAll {
             get { return allowAll; }
@@ -382,6 +485,8 @@ namespace RestrictedStorage
         //   or an hediff?
         List<Pawn> allowedPawns=null;
         List<Pawn> disallowedPawns=null;
+        bool shouldCheckForIncorrectItems=true;
+        int hasIncorrectItemsCounter=0;
     }
 
 }
