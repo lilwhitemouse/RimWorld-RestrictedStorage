@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest><!-- ModManager manifest, in case it helps anyone -->
+  <identifier>RestrictedStorage</identifier>
+  <version>1.1.0.1</version>
+  <manifestUri>https://raw.githubusercontent.com/lilwhitemouse/RimWorld-RestrictedStorage/master/About/Manifest.xml</manifestUri>
+  <downloadUri>https://github.com/lilwhitemouse/RimWorld-RestrictedStorage/archive/master.zip</downloadUri>
+</Manifest>
