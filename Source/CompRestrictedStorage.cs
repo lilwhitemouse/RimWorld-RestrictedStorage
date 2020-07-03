@@ -76,6 +76,7 @@ namespace RestrictedStorage
             if (allowAll || allowNone) {
                 GUI.color=Color.gray;
             }
+            Color tmpColor;
             float y=0f;
             float w=outerRect.width-6f; //width, with room for scrollbar  //todo: 16f??
             Rect viewRect = new Rect(0f, 0f, w, scrollViewHeight); //todo: 16f??
@@ -89,21 +90,36 @@ namespace RestrictedStorage
             if (CheckboxChangedToTrue(ref y, w, "All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc")) {
                 noAllNone();
             }
-            // cannibals
-            // non-cannials
-            // depressives
-            // non-depressives (chirpy people)?
+            tmpColor=GUI.color;
+            if (tmpColor!=Color.gray && allowHumans) { // gray options if animals are selected
+                GUI.color=Color.gray;
+            }
+            if ( // human options
+                // cannibals
+                // non-cannials
+                // depressives
+                // non-depressives (chirpy people)?
+                CheckboxChangedToTrue(ref y, w, "Colonists", ref allowColonists, "LWM.ColonistsDesc", 1) ||
+                // if the player selects the first one, the rest won't be drawn, but who cares? they get drawn an instant later
+                CheckboxChangedToTrue(ref y, w, "Guests", ref allowGuests, "LWM.ColonistsDesc", 1) ||
+                CheckboxChangedToTrue(ref y, w, "Prisoners", ref allowPrisoners, "LWM.ColonistsDesc", 1)
+                ) {
+                noAllNone();
+                if (allowHumans) allowHumans=false;
+            }
+            GUI.color=tmpColor;
             Widgets.DrawLineHorizontal(0, y+1, w);
             y+=2;
             if (CheckboxChangedToTrue(ref y, w, "All animals", ref allowAnimals, "LWM.AllAnimalsDesc")) {
                 noAllNone();
             }
-            Color d=GUI.color;
-            if (d!=Color.gray && allowAnimals) { // gray options if animals are selected
+            tmpColor=GUI.color;
+            if (tmpColor!=Color.gray && allowAnimals) { // gray options if animals are selected
                 GUI.color=Color.gray;
             }
-            if (
+            if ( // animal options
                 CheckboxChangedToTrue(ref y, w, "that can graze (plant eaters)", ref allowGrazers, "LWM.AnimalsThatGrazeDesc", 1) ||
+                // if the player selects the first one, the rest won't be drawn, but who cares? they get drawn an instant later
                 CheckboxChangedToTrue(ref y, w, "that cannot graze", ref allowNonGrazers, "LWM.AnimalsThatDoNotGrazeDesc", 1) ||
                 CheckboxChangedToTrue(ref y, w, "that can eat meat", ref allowMeatEaters, "LWM.AnimalsThatEatMeatDesc", 1) ||
                 CheckboxChangedToTrue(ref y, w, "that cannot eat meat", ref allowNonMeatEaters, "LWM.AnimalsThatDoNotEatMeatDesc", 1)
@@ -112,7 +128,7 @@ namespace RestrictedStorage
                 noAllNone();
                 if (allowAnimals) allowAnimals=false;
             }
-            GUI.color=d;
+            GUI.color=tmpColor;
 
             if (Widgets.ButtonText(new Rect(0,y,w,22), "Area control"))
                 Find.WindowStack.Add(new Dialog_SpecifyAreas(this.parent.Map, this));
@@ -232,44 +248,67 @@ namespace RestrictedStorage
                 }
             }
         }
-
         public override void PostExposeData() {
             //if (Scribe.mode==LoadSaveMode.Saving &&
             //    this.IsDefault()) return;// don't bother saving.
-            Scribe_Values.Look(ref allowAll, "LWM_RS_allowAll", true);
-            Scribe_Values.Look(ref allowNone, "LWM_RS_allowNone", false);
-            Scribe_Values.Look(ref allowHumans, "LWM_RS_allowHumans", false);
-            Scribe_Values.Look(ref allowAnimals, "LWM_RS_allowAnimals", false);
-            Scribe_Values.Look(ref allowGrazers, "LWM_RS_allowGrazers", false);
-            Scribe_Values.Look(ref allowNonGrazers, "LWM_RS_allowNonGrazers", false);
-            Scribe_Values.Look(ref allowMeatEaters, "LWM_RS_allowMeatEaters", false);
-            Scribe_Values.Look(ref allowNonMeatEaters, "LWM_RS_allowNonMeatEaters", false);
+            // Saving status:
+            // We COULD do:
+            //    Scribe_Values.Look(ref allowAll, "LWM_RS_allowAll", true);
+            //    Scribe_Values.Look(ref allowNone, "LWM_RS_allowNone", false);
+            //    Scribe_Values.Look(ref allowHumans, "LWM_RS_allowHumans", false);
+            //    //etc etc etc
+            // But there's this cool thing called reflection that means we don't have to:
+            var allMyVars=typeof(CompRestrictedStorage).GetFields(HarmonyLib.AccessTools.allDeclared);
+            object thisAsO=this;
+            foreach (var f in allMyVars) {
+                //Log.Warning("Looking at field "+f.Name+" of type "+f.FieldType);
+                if (f.FieldType==typeof(bool) &&
+                    String.Compare("allow", 0, f.Name, 0, 5)==0) {
+                    //Log.Message("Scribe_Values.Looking at "+f.Name);
+                    // Frankly, I have no idea if "ref f.GetValue(thisAsO)" would work.
+                    //   Probably not. And I'm not inclined to find out, tbh.
+                    bool x=(bool)f.GetValue(thisAsO);
+                    // Scribe with default value:
+                    // You can't actually get the "default" value (bool allowAll=true) because
+                    // it's actually set inside the constructor. So we do it this way:
+                    if (f.Name == "allowAll")
+                        Scribe_Values.Look(ref x, "LWM_RS_"+f.Name, true);
+                    else
+                        Scribe_Values.Look(ref x, "LWM_RS_"+f.Name, false);
+                    if (Scribe.mode==LoadSaveMode.LoadingVars)
+                        f.SetValue(thisAsO, x);
+                }
+            }
+            Log.ResetMessageCount();
             // need to have this called both during loading vars and during cross-reference
             //   so cannot firewall it behind a variable that disappears after Scribe.mode of LoadingVars
 //            bool tmp=(allowedIfInAreas !=null || allowedIfNotInAreas!=null);
 //            bool tmp=(!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty());
 //            Scribe_Values.Look(ref tmp, "areas", false);
 //            if (tmp) {
-                Scribe_Collections.Look<Area>(ref this.allowedIfInAreas, false, "LWM_RS_areaIfIn", LookMode.Reference, Array.Empty<object>());
-                Scribe_Collections.Look<Area>(ref this.allowedIfNotInAreas, false, "LWM_RS_areaIfNotIn", LookMode.Reference, Array.Empty<object>());
+            Scribe_Collections.Look<Area>(ref this.allowedIfInAreas, false, "LWM_RS_areaIfIn", LookMode.Reference, Array.Empty<object>());
+            Scribe_Collections.Look<Area>(ref this.allowedIfNotInAreas, false, "LWM_RS_areaIfNotIn", LookMode.Reference, Array.Empty<object>());
 //                Log.Message("allowed if in areas is "+(allowedIfInAreas==null?"NULL":allowedIfInAreas.Count.ToString())+", mode "+Scribe.mode);
 //            }
 //            tmp=(allowedPawns!=null || disallowedPawns!=null);
 //            Scribe_Values.Look(ref tmp, "pawns", false);
 //            if (tmp) {
-                Scribe_Collections.Look<Pawn>(ref this.allowedPawns, "LWM_RS_okPawns", LookMode.Reference, Array.Empty<object>());
-                Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "LWM_RS_notThesePawns", LookMode.Reference, Array.Empty<object>());
+            Scribe_Collections.Look<Pawn>(ref this.allowedPawns, "LWM_RS_okPawns", LookMode.Reference, Array.Empty<object>());
+            Scribe_Collections.Look<Pawn>(ref this.disallowedPawns, "LWM_RS_notThesePawns", LookMode.Reference, Array.Empty<object>());
 //            }
                 // clean up, just in case:
-                if (allowedIfInAreas!=null && allowedIfInAreas.Count==0) allowedIfInAreas=null;
-                if (allowedIfNotInAreas!=null && allowedIfNotInAreas.Count==0) allowedIfNotInAreas=null;
-                if (allowedPawns!=null && allowedPawns.Count==0) allowedPawns=null;
-                if (disallowedPawns!=null && disallowedPawns.Count==0) disallowedPawns=null;
+            if (allowedIfInAreas!=null && allowedIfInAreas.Count==0) allowedIfInAreas=null;
+            if (allowedIfNotInAreas!=null && allowedIfNotInAreas.Count==0) allowedIfNotInAreas=null;
+            if (allowedPawns!=null && allowedPawns.Count==0) allowedPawns=null;
+            if (disallowedPawns!=null && disallowedPawns.Count==0) disallowedPawns=null;
         }
         bool AllForbidden() { //TODO: update this once, keep in variable
             if (allowAll) return false;
             if (allowNone) return true;
             if (allowHumans) return false;
+            if (allowColonists) return false;
+            if (allowGuests) return false;
+            if (allowPrisoners) return false;
             if (allowAnimals) return false;
             if (allowGrazers) return false;
             if (allowNonGrazers) return false;
@@ -290,11 +329,13 @@ namespace RestrictedStorage
         bool AllowAllHumans() {
             // todo: disallowedPawns?
             if (allowHumans) return true;
+            if (allowColonists && allowGuests && allowPrisoners) return true;
             return false;
         }
         bool AllowAllAnimals() {
             // todo: disallowedPawns?
             if (allowAnimals) return true;
+            // todo: animals that don't eat?
             if (allowGrazers && allowNonGrazers) return true;
             if (allowMeatEaters && allowNonMeatEaters) return true;
             return false;
@@ -305,8 +346,10 @@ namespace RestrictedStorage
             if (p.Faction!=Faction.OfPlayer) return false;
             if (shouldCheckForIncorrectItems) CheckForIncorrectItems();
             // if thing t shouldn't be stored here, don't forbid it:
+            // TODO: save hasIncorrectItemsCounter, so game behavior
+            // doesn't change across save/load:
             if (hasIncorrectItemsCounter>0) {
-                // a bit of logic to not ALWAYS check
+                // a bit of logic to not ALWAYS check this.
                 // Buildings_Storage don't tick, so
                 // we need some logic to check from
                 // time to time...
@@ -331,13 +374,20 @@ namespace RestrictedStorage
             }
             RaceProperties race=p.RaceProps;
             if (allowHumans && race.Humanlike) return false;
-            if (race.Animal) {
+            if (race.Humanlike) { // humanlike-specific logic:
+                if (allowColonists && p.Faction==Faction.OfPlayer
+                    && p.guest?.IsPrisoner != true) return false;
+                if (allowPrisoners && p.guest?.IsPrisoner==true) return false;
+                if (allowGuests    && p.Faction!=Faction.OfPlayer
+                    && p.guest!=null && !p.guest.IsPrisoner
+                    && p.guest.HostFaction==Faction.OfPlayer) return false;
+            } else if (race.Animal) { // animal-specific logic:
                 if (allowAnimals) return false;
                 // TODO: Non-eaters
                 if (!race.EatsFood) {
                     return true; // we don't have a category for them yet: TODO
                 }
-                // Ugh.  Tree eaters.  They aren't Herbivorous.  They aren't Omniverous.  We can't
+                // Ugh.  Tree eaters.  They aren't "Herbivorous."  They aren't "Omniverous."  We can't
                 //   look them up by ResolvedDietCategory :/
                 if (allowGrazers && ((race.foodType & (FoodTypeFlags.Plant |
                                                        FoodTypeFlags.Tree))>0)) {
@@ -355,6 +405,7 @@ namespace RestrictedStorage
                 }
                 //Log.Message("Checking animal "+p+" about to fail");
             } // end animals
+            // todo? else { // neither human nor animal?
             if (allowedPawns!=null) {
                 if (allowedPawns.Contains(p)) return false;
             }
@@ -417,7 +468,7 @@ namespace RestrictedStorage
         public void AddDisallowedPawn(Pawn p) {
             if (disallowedPawns==null) disallowedPawns=new List<Pawn>();
             disallowedPawns.Add(p);
-            noAllNone();
+            noAllNone(); // todo: maybe set allowHumans and allowAnimals?
         }
         public void RemoveDisallowedPawn(Pawn p) {
             disallowedPawns?.Remove(p);
@@ -439,8 +490,9 @@ namespace RestrictedStorage
         }*/
         // does it have only default options:
         public virtual bool IsDefault() {
-            if (allowNone || allowHumans || allowAnimals || allowGrazers || allowNonGrazers ||
-                allowMeatEaters || allowNonMeatEaters )
+            if (allowNone
+                || allowHumans || allowColonists || allowPrisoners || allowGuests
+                || allowAnimals || allowGrazers || allowNonGrazers || allowMeatEaters || allowNonMeatEaters )
                 return false;
             if (!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty() ||
                 !allowedPawns.NullOrEmpty() || !disallowedPawns.NullOrEmpty() )
@@ -451,6 +503,9 @@ namespace RestrictedStorage
             this.allowAll=other.allowAll;
             this.allowNone=other.allowNone;
             this.allowHumans=other.allowHumans;
+            this.allowColonists=other.allowColonists;
+            this.allowPrisoners=other.allowPrisoners;
+            this.allowGuests=other.allowGuests;
             this.allowAnimals=other.allowAnimals;
             this.allowGrazers=other.allowGrazers;
             this.allowNonGrazers=other.allowNonGrazers;
@@ -469,16 +524,20 @@ namespace RestrictedStorage
             if (other.disallowedPawns!=null)
                 disallowedPawns=new List<Pawn>(disallowedPawns);
         }
-        bool allowAll=true;
+        bool allowAll=true; // note: needs special logic when exposing
         bool allowNone=false;
+
         bool allowHumans=false;
+        bool allowColonists=false;
+        bool allowPrisoners=false;
+        bool allowGuests=false;
+
         bool allowAnimals=false;
-        //bool allowHerbivores=false;
-        //bool allowCarnivores = false;
         bool allowGrazers = false;
         bool allowNonGrazers = false;
         bool allowMeatEaters = false;
         bool allowNonMeatEaters = false;
+
         List<Area> allowedIfInAreas=null;
         List<Area> allowedIfNotInAreas=null;
         // todo: update this from time to time?  ...give pawns a comp if they are forbidden/allowed?
