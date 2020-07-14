@@ -22,7 +22,6 @@ namespace RestrictedStorage
             this.optionalTitle="Access Control for Pawns";
         }
         public override void DoWindowContents(Rect inRect) { //todo: much better info
-            float y=0f;
             //make big
             Rect r=new Rect(0,0,inRect.width, 22);
             Rect rl=new Rect(0,22,inRect.width/2,22);
@@ -30,9 +29,15 @@ namespace RestrictedStorage
             Widgets.Label(r, "Are the contents of this storage");
             Widgets.Label(rl, "ALWAYS accessible to");
             Widgets.Label(rr, "NEVER accessible to");
+
+            r = new Rect(1,44,inRect.width-1, inRect.height-48-48); //-height-button
+            Rect innerRect=new Rect(0,0,inRect.width-20,totalHeight); // room for scroll bar
+            Widgets.BeginScrollView(r, ref scrollPos, innerRect);
+
             //make small a
-            Widgets.Label(new Rect(0,44,inRect.width,22), "Humans");
-            y+=66f;
+            float y=0f;
+            Widgets.Label(new Rect(0,y,inRect.width,22), "Humans");
+            y+=22f;
             foreach (Map m in Find.Maps) {
                 foreach (Pawn p in m.mapPawns.AllPawns) {
                     if (p.RaceProps.Humanlike && p.Faction==Faction.OfPlayer) {
@@ -49,6 +54,8 @@ namespace RestrictedStorage
                     }
                 }
             }
+            this.totalHeight = y; // quick and dirty way to handle this
+            Widgets.EndScrollView();
         }
         void DoPawnRow(ref float y, float width, Pawn p) {
             // if they have this, unrestricted
@@ -56,7 +63,7 @@ namespace RestrictedStorage
             float threeQuaters=oneQuarter*3;
             //Rect leftAllowedRect=new Rect(20,y+1, 24,24);
             //Rect rightDisallowedRect=new Rect(width-44, y+1, 24,24);
-            Rect centerPawnName=new Rect(50,y+2, width-100,22);
+            Rect centerPawnName=new Rect(54,y+2, width-108,22);
             if (this.crs.IsAllowedPawn(p)) { // already allowed
                 bool X=true;
                 Widgets.Checkbox(new Vector2(20,y+1), ref X);
@@ -64,8 +71,8 @@ namespace RestrictedStorage
                     crs.RemoveAllowedPawn(p);
                 }
             } else { // should we allow it?
-                Rect leftAllowedRect=new Rect(20,y+1, 24,24);
-                if (Widgets.ButtonText(leftAllowedRect, "?")) {
+                Rect leftAllowedRect=new Rect(20,y+1, 28,24);
+                if (Widgets.ButtonText(leftAllowedRect, "+?")) {
                     crs.RemoveDisallowedPawn(p);
                     crs.AddAllowedPawn(p);
                 }
@@ -78,8 +85,8 @@ namespace RestrictedStorage
                     crs.RemoveDisallowedPawn(p);
                 }
             } else {
-                Rect rightDisallowedRect=new Rect(width-44, y+1, 24,24);
-                if (Widgets.ButtonText(rightDisallowedRect, "?")) {
+                Rect rightDisallowedRect=new Rect(width-48, y+1, 28,24);
+                if (Widgets.ButtonText(rightDisallowedRect, "-?")) {
                     crs.RemoveAllowedPawn(p);
                     crs.AddDisallowedPawn(p);
                 }
@@ -87,5 +94,7 @@ namespace RestrictedStorage
             y+=26;
         }
         CompRestrictedStorage crs;
+        Vector2 scrollPos;
+        float totalHeight;
     }
 }

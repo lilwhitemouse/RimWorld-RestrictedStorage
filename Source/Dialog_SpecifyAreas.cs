@@ -20,26 +20,30 @@ namespace RestrictedStorage
             this.closeOnClickedOutside=true;
             this.forcePause=true;
             this.resizeable=true;
-            this.optionalTitle="Specify Access Control by Area";
+            this.optionalTitle="Specify Access Control by Area";//TODO: translate entire thing...
         }
         public override void DoWindowContents(Rect inRect) { //todo: much better info
-            float y=0f;
             //make big
             Rect r=new Rect(0,0,inRect.width, 22);
-            Rect rl=new Rect(0,22,inRect.width/2,22);
-            Rect rr=new Rect(inRect.width/2,22,inRect.width/2,22);
+            Rect rl=new Rect(1,22,inRect.width/2-11,22); // to fit over 1/2 innerRect below
+            Rect rr=new Rect(inRect.width/2-10,22,inRect.width/2,22);
             Widgets.Label(r, "Contents are available to any colonists/animals who");
             Widgets.Label(rl, "ARE allowed in:");
             Widgets.Label(rr, "ARE NOT allowed in:");
-            y+=44f;
-            //make small a
-            DoAreaRow(ref y, inRect.width, null); // "Unrestricted" area
+
+            r = new Rect(1,44,inRect.width-1, inRect.height-48-48); //-height-button
+            Rect innerRect=new Rect(0,0,inRect.width-20,totalHeight); // room for scroll bar
+            Widgets.BeginScrollView(r, ref scrollPos, innerRect);
+
+            float y=0f;
+            DoAreaRow(ref y, innerRect.width, null); // "Unrestricted" area
             foreach (Area area in map.areaManager.AllAreas) {
                 if (area.AssignableAsAllowed()) {
-                    DoAreaRow(ref y, inRect.width, area);
+                    DoAreaRow(ref y, innerRect.width, area);
                 }
             }
-
+            this.totalHeight = y; // quick and dirty way to handle this
+            Widgets.EndScrollView();
         }
         void DoAreaRow(ref float y, float width, Area area) {
             // if they have this, unrestricted
@@ -49,6 +53,8 @@ namespace RestrictedStorage
             GUI.DrawTexture(rr, (area != null) ? area.ColorTexture : BaseContent.GreyTex);
             GUI.DrawTexture(rl, (area != null) ? area.ColorTexture : BaseContent.GreyTex);
             //Text.Anchor = TextAnchor.MiddleLeft; // no idea what unity assembly this is, so leave it out.
+
+            // note that AreaAllowedLabel_Area (and all this) takes `null` for "unrestricted"
 			string text = AreaUtility.AreaAllowedLabel_Area(area);
             bool left=this.crs.IsAllowedInArea(area);
             bool right=this.crs.IsAllowedNotInArea(area);
@@ -63,21 +69,11 @@ namespace RestrictedStorage
                 else this.crs.RemoveAllowedNotInArea(area);
             }
             y+=30;
-            /*
-			GUI.DrawTexture(rect, (area != null) ? area.ColorTexture : BaseContent.GreyTex);
-			Text.Anchor = TextAnchor.MiddleLeft;
-			string text = AreaUtility.AreaAllowedLabel_Area(area);
-			Rect rect2 = rect;
-			rect2.xMin += 3f;
-			rect2.yMin += 2f;
-			Widgets.Label(rect2, text);
-            */
-//            Widgets.Label(new Rect(0,y,width,22f),"Looking at area: "+AreaUtility.AreaAllowedLabel_Area(area));
-//            y+=22f;
         }
-
 
         Map map;
         CompRestrictedStorage crs;
+        Vector2 scrollPos;
+        float totalHeight;
     }
 }
