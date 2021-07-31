@@ -2,8 +2,10 @@ using System;
 using RimWorld;
 using Verse;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Reflection; //getting animals in order is hard
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
     public class Dialog_SpecifyPawns : Window {
         public override Vector2 InitialSize {
@@ -38,19 +40,56 @@ namespace RestrictedStorage
             float y=0f;
             Widgets.Label(new Rect(0,y,inRect.width,22), "Humans");
             y+=22f;
-            foreach (Map m in Find.Maps) {
-                foreach (Pawn p in m.mapPawns.AllPawns) {
-                    if (p.RaceProps.Humanlike && p.Faction==Faction.OfPlayer) {
-                        DoPawnRow(ref y, inRect.width, p);
-                    }
-                }
+            foreach (Pawn p in Find.ColonistBar.GetColonistsInOrder()) {
+                DoPawnRow(ref y, inRect.width, p);
             }
+
             Widgets.Label(new Rect(0,y,inRect.width,22), "Animals");
             y+=22;
-            foreach (Map m in Find.Maps) {
-                foreach (Pawn p in m.mapPawns.AllPawns) {
-                    if (p.RaceProps.Animal && p.Faction==Faction.OfPlayer) {
-                        DoPawnRow(ref y, inRect.width, p);
+            // This is trickier than I first thought for one reason:
+            //   Sorting.
+            // I want the animals to move in order as viewed in the Animals
+            // main tab window (similar to pawns in the pawn bar). It's not
+            // an easy sort to do by hand, and since I can grab it directly
+            // from the main tab window...why not?
+            // #SlightlyDeepMagic #Reflection
+
+            // Note: this might be slightly slow, but game isn't running anyway,
+            // so ...okay?
+
+            // The MaintabWindow_... is *the* actual window; it sticks around and one can grab it:
+            //   use "as" to make sure it CAN be cast to MTW_A:
+            MainTabWindow_Animals mtw=(MainTabWindow_Animals)
+                (DefDatabase<MainButtonDef>.GetNamed("Animals").TabWindow as MainTabWindow_Animals);
+            if (mtw != null) {
+                // The MainTabWindow_Animals(Wildlife, etc) is a MainTabWindow_PawnTable
+                // Getting the PawnTable takes a little work:
+                var table=(PawnTable)typeof(MainTabWindow_PawnTable).GetField("table",
+                                                                              BindingFlags.Instance |
+                                                                              BindingFlags.NonPublic |
+                                                                              BindingFlags.GetField)
+                    .GetValue(mtw as MainTabWindow_PawnTable); // because table is a ..._PawnTable var
+                if (table==null) {
+                    // If the player has never opened the Animals window, there's no table!
+                    // But we can force building the table:
+                    mtw.Notify_ResolutionChanged();
+                    table=(PawnTable)typeof(MainTabWindow_PawnTable).GetField("table",
+                                                                              BindingFlags.Instance |
+                                                                              BindingFlags.NonPublic |
+                                                                              BindingFlags.GetField)
+                        .GetValue(mtw as MainTabWindow_PawnTable);
+                }
+                foreach (Pawn p in table.PawnsListForReading) {
+                    DoPawnRow(ref y, inRect.width, p);
+                }
+            } else { // no MainTabWindow_Animals available?
+                // This might happen if some modder really breaks the main tab window for animals?
+                // fall back on just counting them all and being happy
+                foreach (Map m in Find.Maps) {
+                    foreach (Pawn p in m.mapPawns.AllPawns) {
+                        if (p.RaceProps.Animal && p.Faction==Faction.OfPlayer) {
+                            DoPawnRow(ref y, inRect.width, p);
+                        }
                     }
                 }
             }

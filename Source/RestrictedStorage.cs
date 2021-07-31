@@ -10,7 +10,7 @@ using Verse.AI;
 using System.Diagnostics;
 using HarmonyLib;
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
   [StaticConstructorOnStartup]
   public class RestrictedStorage

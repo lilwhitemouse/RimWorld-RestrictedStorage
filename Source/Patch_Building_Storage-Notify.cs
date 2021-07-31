@@ -10,7 +10,7 @@ using Verse.AI;
 using System.Reflection.Emit; // for OpCodes in Harmony Transpiler
 using HarmonyLib;
 
-namespace RestrictedStorage {
+namespace LWM.RestrictedStorage {
     [HarmonyPatch(typeof(RimWorld.Building_Storage), "Notify_ReceivedThing")]
     public static class Patch_NotifyReceivedThing {
         static void Postfix(Building_Storage __instance

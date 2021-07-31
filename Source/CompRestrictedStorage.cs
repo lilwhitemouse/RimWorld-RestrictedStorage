@@ -8,7 +8,7 @@ using Verse;
 using UnityEngine;
 using Verse.AI;
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
     public class CompRestrictedStorage : ThingComp {
         // TODO:
@@ -537,6 +537,10 @@ namespace RestrictedStorage
         bool allowNonGrazers = false;
         bool allowMeatEaters = false;
         bool allowNonMeatEaters = false;
+//        public bool AllowStarving { get { return _allowStarving;} set { } }
+//            set { _allowStarving=value; Update();} }
+
+
 
         List<Area> allowedIfInAreas=null;
         List<Area> allowedIfNotInAreas=null;

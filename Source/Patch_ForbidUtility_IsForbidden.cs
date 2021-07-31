@@ -10,7 +10,7 @@ using Verse.AI;
 using System.Reflection.Emit; // for OpCodes in Harmony Transpiler
 using HarmonyLib;
 
-namespace RestrictedStorage {
+namespace LWM.RestrictedStorage {
     // In RimWorld.ForbidUtility's bool IsForbidden(Thing t, Pawn pawn),
     //   there are several tests for whether an item is forbidden
     // After the 1st few tests, we insert our test right before the last:

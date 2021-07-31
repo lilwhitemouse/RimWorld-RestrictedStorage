@@ -9,7 +9,7 @@ using UnityEngine;
 using Verse.AI;
 using HarmonyLib;
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
     [HarmonyPatch(typeof(StorageSettingsClipboard), "Copy")]
     static class Patch_StorageSettingsClipboard_Copy {

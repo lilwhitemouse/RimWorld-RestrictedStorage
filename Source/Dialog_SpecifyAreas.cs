@@ -3,7 +3,7 @@ using RimWorld;
 using Verse;
 using UnityEngine;
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
     public class Dialog_SpecifyAreas : Window {
         public override Vector2 InitialSize {

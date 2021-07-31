@@ -8,7 +8,7 @@ using Verse;
 using UnityEngine;
 using Verse.AI;
 
-namespace RestrictedStorage
+namespace LWM.RestrictedStorage
 {
     // TODO: can we show at least part of this if multiple storage buildings are selected?
     public class ITab_RestrictedStorage : ITab {
@@ -17,7 +17,9 @@ namespace RestrictedStorage
             this.labelKey = "LWM.RS.Restriction"; //.Translate(); //todo
         }
         static CompRestrictedStorage defaultCRS=new CompRestrictedStorage();
-        protected override void FillTab() {
+
+        // NOTE: This is actually protected, but the krefs.RimWorld package makes all things public for us
+        public override void FillTab() {
             Text.Font=GameFont.Medium;
             CompRestrictedStorage crs=(this.SelThing as ThingWithComps).GetComp<CompRestrictedStorage>();
             Rect mainOptionRect=new Rect(10f, 10f, size.x-50f, 54f); // -10f for border, -30f for X to close the ITab
