@@ -18,8 +18,7 @@ namespace LWM.RestrictedStorage
         }
         static CompRestrictedStorage defaultCRS=new CompRestrictedStorage();
 
-        // NOTE: This is actually protected, but the krefs.RimWorld package makes all things public for us
-        public override void FillTab() {
+        protected override void FillTab() {
             Text.Font=GameFont.Medium;
             CompRestrictedStorage crs=(this.SelThing as ThingWithComps).GetComp<CompRestrictedStorage>();
             Rect mainOptionRect=new Rect(10f, 10f, size.x-50f, 54f); // -10f for border, -30f for X to close the ITab

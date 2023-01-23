@@ -242,7 +242,7 @@ namespace LWM.RestrictedStorage
                         #if DEBUG
                         Log.Message("  found incorrect thing "+t);
                         #endif
-                        hasIncorrectItemsCounter=1;
+                        hasIncorrectItemsCounter=1;  //TODO: wait, what?
                         return;
                     }
                 }
@@ -348,7 +348,7 @@ namespace LWM.RestrictedStorage
             // if thing t shouldn't be stored here, don't forbid it:
             // TODO: save hasIncorrectItemsCounter, so game behavior
             // doesn't change across save/load:
-            if (hasIncorrectItemsCounter>0) {
+            if (hasIncorrectItemsCounter>0) {//TODO: This is totally whacked
                 // a bit of logic to not ALWAYS check this.
                 // Buildings_Storage don't tick, so
                 // we need some logic to check from

@@ -26,7 +26,7 @@ namespace LWM.RestrictedStorage {
     }
     // This causes a crash-to-desktop, as Notify_LostThing is an empty virtual
     // that gets optimized away:
-    // We have to find a different way to check for not having incorrect items...
+    // We have to find a different way to check for not having incorrect items...//TODO: shouldn't crash now?
     #if false
     [HarmonyPatch(typeof(RimWorld.Building_Storage), "Notify_LostThing")]
     public static class Patch_NotifyLostThing {

@@ -21,8 +21,12 @@ namespace LWM.RestrictedStorage
       // Add ITab and Comp to proper storage buildings:
       //   Add to all Building_Storage but not ones in Production (hoppers?)
       // This should be slightly faster than xpath xml patching.
+      // Also slightly safer given some of the crazy **** I do in DS
       var desigProduction=DefDatabase<DesignationCategoryDef>.GetNamed("Production");
       var itabResolved=InspectTabManager.GetSharedInstance(typeof(ITab_RestrictedStorage));
+      #if DEBUG
+      List<string> newRestricted = new List<string>();
+      #endif
       foreach (var b in DefDatabase<ThingDef>.AllDefs
                .Where(d=>(d?.thingClass!=null &&
                           (d.thingClass == typeof(Building_Storage) ||
@@ -34,7 +38,10 @@ namespace LWM.RestrictedStorage
           //       <compClass>CompRestrictedStorage</compClass>etc
           if (b.comps!=null) {
               b.comps.Add(new CompProperties {compClass=typeof(CompRestrictedStorage)});
-          } else {
+              #if DEBUG
+              newRestricted.Add(b.defName);
+              #endif
+                } else {
               Log.Message("LWM.Restricted Storage: "+b+" does not have comps");
               continue;
           }
@@ -58,6 +65,9 @@ namespace LWM.RestrictedStorage
               Log.Message("LWM.Restricted Storage: "+b+" does not have inspectorTabs");
           }
       }
+      #if DEBUG
+      Debug.Log(newRestricted.Count == 0 ? "No Storage to restrict!! :(" : String.Join(", ", newRestricted));
+      #endif
     }
   }
 
@@ -66,19 +76,19 @@ namespace LWM.RestrictedStorage
         [Conditional("DEBUG")]
         internal static void Log(string s)
         {
-            Verse.Log.Message(s);
+            Verse.Log.Message("LWM.RestrictedStorage: " + s);
         }
 
         [Conditional("DEBUG")]
         internal static void Warning(string s)
         {
-            Verse.Log.Warning(s);
+            Verse.Log.Warning("LWM.RestrictedStorage: " + s);
         }
 
         [Conditional("DEBUG")]
         internal static void Error(string s)
         {
-            Verse.Log.Error(s);
+            Verse.Log.Error("LWM.RestrictedStorage: " + s);
         }
     }
 }
