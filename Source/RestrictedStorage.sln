@@ -18,6 +18,15 @@ Global
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$0.StandardHeader = $2
+		$0.TextStylePolicy = $3
+		$3.FileWidth = 80
+		$3.TabWidth = 2
+		$3.TabsToSpaces = True
+		$3.IndentWidth = 2
+		$3.EolMarker = Unix
+		$3.scope = application/xml
+		$0.XmlFormattingPolicy = $4
+		$4.scope = application/xml
 		version = 1.4.0.1
 	EndGlobalSection
 EndGlobal
