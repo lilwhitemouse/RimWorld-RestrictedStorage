@@ -198,7 +198,11 @@ namespace LWM.RestrictedStorage
                     y+=22f;
                     if (!tmp) { toRemove = a; needToRemove = true; }
                 }
-                if (needToRemove) allowedIfNotInAreas.Remove(toRemove);
+                if (needToRemove)
+                {
+                    allowedIfNotInAreas.Remove(toRemove);
+                    if (allowedIfNotInAreas.Count == 0) allowedIfNotInAreas = null;
+                }
             }
             if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.PawnControl"))
                 Find.WindowStack.Add(new Dialog_SpecifyPawns(this));
@@ -328,6 +332,7 @@ namespace LWM.RestrictedStorage
 //            bool tmp=(!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty());
 //            Scribe_Values.Look(ref tmp, "areas", false);
 //            if (tmp) {
+//TODO: if lists are empty, set them to null
             Scribe_Collections.Look<Area>(ref this.allowedIfInAreas, false, "LWM_RS_areaIfIn", LookMode.Reference, Array.Empty<object>());
             Scribe_Collections.Look<Area>(ref this.allowedIfNotInAreas, false, "LWM_RS_areaIfNotIn", LookMode.Reference, Array.Empty<object>());
 //                Log.Message("allowed if in areas is "+(allowedIfInAreas==null?"NULL":allowedIfInAreas.Count.ToString())+", mode "+Scribe.mode);
@@ -584,6 +589,8 @@ namespace LWM.RestrictedStorage
         bool allowNonGrazers = false;
         bool allowMeatEaters = false;
         bool allowNonMeatEaters = false;
+        //TODO: make this work:
+        bool allowStarvingAnimals = false;
 //        public bool AllowStarving { get { return _allowStarving;} set { } }
 //            set { _allowStarving=value; Update();} }
 
