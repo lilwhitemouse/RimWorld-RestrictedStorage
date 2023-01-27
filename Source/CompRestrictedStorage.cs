@@ -1,15 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
-using System.Text;
 using RimWorld;
-using Verse;
 using UnityEngine;
-using Verse.AI;
+using Verse;
 
 namespace LWM.RestrictedStorage
 {
+    /// <summary>
+    /// Comp restricted storage.
+    /// NOTE: re: Overlays
+    /// In 1.3 I think buildings were drawn dynamically? In 1.4 they are not. This includes by default
+    /// all storage units I could find. BUT, the overlay is only drawn if the building is real-time.
+    /// Well, F.  Workaround: any time any comp has a setting that makes it need to draw an overlay
+    /// (that is, any time it isn't AllowAll...any time it's AnyForbidden(), we register the parent
+    /// as a dynamically drawable item.
+    /// We don't deregister them. Ever. Someone else might do the same thing, and we would be 
+    /// stepping on their little toesies if we did. So there IS a slight overhead to using this 
+    /// mod, and - depending on how one uses it - the overhead could be lowered by saving and
+    /// reloading the game.
+    /// It's probably not a big deal.
+    /// (Note: I could get around this by keeping my own list, but that's just stupid crazy)
+    /// </summary>
     public class CompRestrictedStorage : ThingComp {
         // TODO:
         //   public override IEnumerable<Gizmo> CompGetGizmosExtra() {
@@ -24,13 +35,23 @@ namespace LWM.RestrictedStorage
         public override void Initialize(CompProperties props) {
             base.Initialize(props);
         }
-        public override void PostDraw() {
+
+        public override void PostSpawnSetup(bool respawningAfterLoad)
+        {
+            base.PostSpawnSetup(respawningAfterLoad);
+            // Note: cannot just check respawningAfterLoad - what if something gets moved?
+            if (this.AnyForbidden()) RegisterDrawable();
+        }
+        public void RegisterDrawable() => parent.Map.dynamicDrawManager.RegisterDrawable(parent);
+
+        public override void PostDraw() { /***************  Overlays!  *****************/
             base.PostDraw();
             if (AllForbidden()) {
                 this.parent.Map.overlayDrawer.DrawOverlay(this.parent, OverlayTypes.ForbiddenBig);
                 return;
             }
             if (AnyForbidden()) {
+
                 this.parent.Map.overlayDrawer.DrawOverlay(this.parent, OverlayTypes.Forbidden);
                 return;
             }
@@ -40,21 +61,30 @@ namespace LWM.RestrictedStorage
         public void DisplayMainOption(Rect inRect) {
             Rect r=new Rect(inRect.xMin, inRect.yMin, inRect.width, inRect.height/2);
             bool tmp=allowAll;
-            Widgets.CheckboxLabeled(r, "Anyone May Take?", ref allowAll);
+            //TODO: MultiPlayer compatibility:
+            /* Am I going to need to do something like:
+             * public int Number {
+             *  get { return someInternalNumber; }
+             *  [SyncMethod]
+             *  set { DoSomethingWeird(value); }
+             * }
+             *   for every single thing?            
+             */            
+            Widgets.CheckboxLabeled(r, "LWM.RS.Anyone".Translate(), ref allowAll); // anyone may take
             if (Mouse.IsOver(r)) {
                 Widgets.DrawHighlight(r);
             }
-            TooltipHandler.TipRegion(r, "Check this to allow anyone to take from this storage site.\nUncheck to allow only those specifically allowed to take things here.");
+            TooltipHandler.TipRegion(r, "LWM.RS.AnyoneDesc".Translate());
             if (allowAll && !tmp && allowNone) {
                 allowNone=false;
             }
             tmp=allowNone;
             r=new Rect(inRect.xMin, inRect.yMin+inRect.height/2, inRect.width, inRect.height/2);
-            Widgets.CheckboxLabeled(r, "No one May Take?", ref allowNone);
+            Widgets.CheckboxLabeled(r, "LWM.RS.Noone".Translate(), ref allowNone);
             if (Mouse.IsOver(r)) {
                 Widgets.DrawHighlight(r);
             }
-            TooltipHandler.TipRegion(r, "If this is checked, NO ONE may take anything from here.  This overrides everything else.");
+            TooltipHandler.TipRegion(r, "LWM.RS.NooneDesc".Translate());
             if (allowNone && !tmp && allowAll) {
                 allowAll=false;
             }
@@ -63,7 +93,7 @@ namespace LWM.RestrictedStorage
         /********************************************************
          *
          * Behavior:
-         * If user selects suboption, unselect header options.
+         * If user selects sub-option, unselect header options.
          *   Rationale: users will only select if they want
          *     to be more specific, so save clicks.
          *   (but only set header options to false if true -
@@ -85,9 +115,9 @@ namespace LWM.RestrictedStorage
             //todo: maybe a bar showing what's actually selected?....??
             //Much todo:
             // todo: make this label a button that shows who CAN take from here?
-            Widgets.Label(new Rect(0,0,w,22f),"Who may take from here?"); // todo: or "These options have no effect right now"
+            Widgets.Label(new Rect(0,0,w,22f),"LWM.RS.WhoMayTake".Translate()); // todo: or "These options have no effect right now"
             y+=22f;
-            if (CheckboxChangedToTrue(ref y, w, "All Humans"/*-like*/, ref allowHumans, "Humans, humanlike, etc")) {
+            if (CheckboxChangedToTrue(ref y, w, "LWM.RS.AllHumans"/*-like*/, ref allowHumans, "LWM.RS.AllHumansDesc")) {
                 noAllNone();
             }
             tmpColor=GUI.color;
@@ -95,14 +125,19 @@ namespace LWM.RestrictedStorage
                 GUI.color=Color.gray;
             }
             if ( // human options
-                // cannibals
-                // non-cannials
-                // depressives
-                // non-depressives (chirpy people)?
-                CheckboxChangedToTrue(ref y, w, "Colonists", ref allowColonists, "LWM.ColonistsDesc", 1) ||
+                 // cannibals
+                 // non-cannials
+                 // depressives
+                 // non-depressives (chirpy people)?
+                // "CaravanColonists -> "Colonists"
+                CheckboxChangedToTrue(ref y, w, "CaravanColonists", ref allowColonists, null, 1) ||
                 // if the player selects the first one, the rest won't be drawn, but who cares? they get drawn an instant later
-                CheckboxChangedToTrue(ref y, w, "Guests", ref allowGuests, "LWM.ColonistsDesc", 1) ||
-                CheckboxChangedToTrue(ref y, w, "Prisoners", ref allowPrisoners, "LWM.ColonistsDesc", 1)
+                // TODO: translate: no "Slaves" in core ><
+                // TODO: ONLY IF IDEOLOGY IS ACTIVE!
+                (ModsConfig.IdeologyActive && CheckboxChangedToTrue(ref y, w, "SlavesSection",  // text from ideology
+                                               ref allowSlaves, null, 1)) ||
+                CheckboxChangedToTrue(ref y, w, "LWM.RS.Guests", ref allowGuests, null, 1) ||
+                CheckboxChangedToTrue(ref y, w, "PrisonersSection", ref allowPrisoners, "LWM.RS.PrisonersDesc", 1)
                 ) {
                 noAllNone();
                 if (allowHumans) allowHumans=false;
@@ -110,7 +145,7 @@ namespace LWM.RestrictedStorage
             GUI.color=tmpColor;
             Widgets.DrawLineHorizontal(0, y+1, w);
             y+=2;
-            if (CheckboxChangedToTrue(ref y, w, "All animals", ref allowAnimals, "LWM.AllAnimalsDesc")) {
+            if (CheckboxChangedToTrue(ref y, w, "LWM.RS.AllAnimals", ref allowAnimals, "LWM.RS.AllAnimalsDesc")) {
                 noAllNone();
             }
             tmpColor=GUI.color;
@@ -118,11 +153,11 @@ namespace LWM.RestrictedStorage
                 GUI.color=Color.gray;
             }
             if ( // animal options
-                CheckboxChangedToTrue(ref y, w, "that can graze (plant eaters)", ref allowGrazers, "LWM.AnimalsThatGrazeDesc", 1) ||
+                CheckboxChangedToTrue(ref y, w, "LWM.RS.AnimalsThatGraze", ref allowGrazers, "LWM.RS.AnimalsThatGrazeDesc", 1) ||
                 // if the player selects the first one, the rest won't be drawn, but who cares? they get drawn an instant later
-                CheckboxChangedToTrue(ref y, w, "that cannot graze", ref allowNonGrazers, "LWM.AnimalsThatDoNotGrazeDesc", 1) ||
-                CheckboxChangedToTrue(ref y, w, "that can eat meat", ref allowMeatEaters, "LWM.AnimalsThatEatMeatDesc", 1) ||
-                CheckboxChangedToTrue(ref y, w, "that cannot eat meat", ref allowNonMeatEaters, "LWM.AnimalsThatDoNotEatMeatDesc", 1)
+                CheckboxChangedToTrue(ref y, w, "LWM.RS.AnimalsThatDoNotGraze", ref allowNonGrazers, "LWM.RS.AnimalsThatDoNotGrazeDesc", 1) ||
+                CheckboxChangedToTrue(ref y, w, "LWM.RS.AnimalsThatEatFlesh", ref allowMeatEaters, "LWM.RS.AnimalsThatEatFleshDesc", 1) ||
+                CheckboxChangedToTrue(ref y, w, "LWM.RS.AnimalsThatEatNoMeat", ref allowNonMeatEaters, "LWM.RS.AnimalsThatEatNoMeatDesc", 1)
                 //CheckboxChangedToTrue(ref y, w, ,1) ||
                 ) {
                 noAllNone();
@@ -130,7 +165,7 @@ namespace LWM.RestrictedStorage
             }
             GUI.color=tmpColor;
 
-            if (Widgets.ButtonText(new Rect(0,y,w,22), "Area control"))
+            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.AreaControl"))
                 Find.WindowStack.Add(new Dialog_SpecifyAreas(this.parent.Map, this));
             y+=22f;
 //todo: add buttons / info here
@@ -139,7 +174,8 @@ namespace LWM.RestrictedStorage
             if (allowedIfInAreas != null) {
                 foreach (Area a in allowedIfInAreas) {
                     bool tmp=true; // can do this MUCH better - with color!
-                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Anyone with area "+AreaUtility.AreaAllowedLabel_Area(a), ref tmp);
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
+                           "LWM.RS.AnyoneWithArea".Translate(AreaUtility.AreaAllowedLabel_Area(a)), ref tmp);
                     y+=22f;
                     if (!tmp) {
                         toRemove=a; // can't remove things mid-foreach
@@ -149,16 +185,19 @@ namespace LWM.RestrictedStorage
                 if (needToRemove) allowedIfInAreas.Remove(toRemove);
             }
             if (allowedIfNotInAreas!=null) { //oh hey, it's stupid to have more than one...whatever.
+                //TODO: This isnot actually checked, BROKEN
+                //TODO: If more than one is set...uncheck the other one!
                 needToRemove=false;
                 foreach (Area a in allowedIfNotInAreas) {
                     bool tmp=true; // can do this MUCH better - with color!
-                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Any area BESIDES "+AreaUtility.AreaAllowedLabel_Area(a), ref tmp);
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
+                            "LWM.RS.AnyoneWithoutArea".Translate(AreaUtility.AreaAllowedLabel_Area(a)), ref tmp);
                     y+=22f;
                     if (!tmp) toRemove=a;
                 }
                 if (needToRemove) allowedIfNotInAreas.Remove(toRemove);
             }
-            if (Widgets.ButtonText(new Rect(0,y,w,22), "Pawn control"))
+            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.PawnControl"))
                 Find.WindowStack.Add(new Dialog_SpecifyPawns(this));
             y+=22f;
             Pawn pawnToRemove=null;
@@ -191,15 +230,15 @@ namespace LWM.RestrictedStorage
         }
 
         // Helper function that does what it says on the box
-        private static bool CheckboxChangedToTrue(ref float y, float width, string textKey, ref bool key, string tooltipKey, int indent=0) {
+        private bool CheckboxChangedToTrue(ref float y, float width, string textKey, ref bool key, string tooltipKey, int indent=0) {
             // this could have been done in 5 linse with a Listing_Standard....if Listing_Standard did
             //   "painting" - which allows the player to drag X (or Check) to mark a bunch of thing X at once.
             //   But.  That is a super useful feature, so:
-            bool tmp=key;
+            bool originalValue=key;
             Rect textRect=new Rect(indent*20f,y+1,width-(indent*20f)-24f,22f);
             //Rect checkRect=new Rect(width-24f,y,24f,24f);
             Rect highlightRect=new Rect(indent*20f,y,width-(indent*20f),24f);
-            Widgets.Label(textRect,textKey); //todo: translate()
+            Widgets.Label(textRect,textKey.Translate()); //todo: translate()
             Widgets.Checkbox(width-24f, y, ref key, 24f, false, true /*paintable*/, null, null);
             if (Mouse.IsOver(highlightRect)) {
                 if (!tooltipKey.NullOrEmpty())
@@ -210,8 +249,8 @@ namespace LWM.RestrictedStorage
                 }
             }
             y+=24f;
-            if (tmp==false &&
-                key==true) return true;
+            this.RegisterDrawable();// safer to just do it for everything:p //TODO: rethink this logic?
+            if (originalValue==false && key==true) return true;
             return false;
         }
         // Sometimes items that should not be in storage end up there
@@ -279,7 +318,7 @@ namespace LWM.RestrictedStorage
                         f.SetValue(thisAsO, x);
                 }
             }
-            Log.ResetMessageCount();
+            Log.ResetMessageCount();//TODO: WTH??
             // need to have this called both during loading vars and during cross-reference
             //   so cannot firewall it behind a variable that disappears after Scribe.mode of LoadingVars
 //            bool tmp=(allowedIfInAreas !=null || allowedIfNotInAreas!=null);
@@ -307,8 +346,9 @@ namespace LWM.RestrictedStorage
             if (allowNone) return true;
             if (allowHumans) return false;
             if (allowColonists) return false;
-            if (allowGuests) return false;
+            if (allowSlaves) return false;
             if (allowPrisoners) return false;
+            if (allowGuests) return false;
             if (allowAnimals) return false;
             if (allowGrazers) return false;
             if (allowNonGrazers) return false;
@@ -329,7 +369,7 @@ namespace LWM.RestrictedStorage
         bool AllowAllHumans() {
             // todo: disallowedPawns?
             if (allowHumans) return true;
-            if (allowColonists && allowGuests && allowPrisoners) return true;
+            if (allowColonists && allowSlaves && allowPrisoners && allowGuests) return true;
             return false;
         }
         bool AllowAllAnimals() {
@@ -376,10 +416,12 @@ namespace LWM.RestrictedStorage
             if (allowHumans && race.Humanlike) return false;
             if (race.Humanlike) { // humanlike-specific logic:
                 if (allowColonists && p.Faction==Faction.OfPlayer
+                    && p.IsSlave != true
                     && p.guest?.IsPrisoner != true) return false;
+                if (allowSlaves && p.Faction == Faction.OfPlayer && p.IsSlave == true) return false;
                 if (allowPrisoners && p.guest?.IsPrisoner==true) return false;
                 if (allowGuests    && p.Faction!=Faction.OfPlayer
-                    && p.guest!=null && !p.guest.IsPrisoner
+                    && p.guest!=null && !p.guest.IsPrisoner // allow guest slaves to take things?
                     && p.guest.HostFaction==Faction.OfPlayer) return false;
             } else if (race.Animal) { // animal-specific logic:
                 if (allowAnimals) return false;
@@ -417,7 +459,7 @@ namespace LWM.RestrictedStorage
                 if (!allowedIfNotInAreas.Contains(p.playerSettings.AreaRestriction)) return false;
             }
             // TODO: "Other" - prolly a mod setting
-            // TODO: robots etc?
+            // TODO: robots!!  And mechs...
             return true;
         }
 
@@ -491,7 +533,7 @@ namespace LWM.RestrictedStorage
         // does it have only default options:
         public virtual bool IsDefault() {
             if (allowNone
-                || allowHumans || allowColonists || allowPrisoners || allowGuests
+                || allowHumans || allowColonists || allowSlaves || allowPrisoners || allowGuests
                 || allowAnimals || allowGrazers || allowNonGrazers || allowMeatEaters || allowNonMeatEaters )
                 return false;
             if (!allowedIfInAreas.NullOrEmpty() || !allowedIfNotInAreas.NullOrEmpty() ||
@@ -504,6 +546,7 @@ namespace LWM.RestrictedStorage
             this.allowNone=other.allowNone;
             this.allowHumans=other.allowHumans;
             this.allowColonists=other.allowColonists;
+            this.allowSlaves = other.allowSlaves;
             this.allowPrisoners=other.allowPrisoners;
             this.allowGuests=other.allowGuests;
             this.allowAnimals=other.allowAnimals;
@@ -529,6 +572,7 @@ namespace LWM.RestrictedStorage
 
         bool allowHumans=false;
         bool allowColonists=false;
+        bool allowSlaves = false;
         bool allowPrisoners=false;
         bool allowGuests=false;
 
