@@ -172,8 +172,9 @@ namespace LWM.RestrictedStorage
             bool needToRemove=false;
             Area toRemove=null; // "null" is a valid Area
             if (allowedIfInAreas != null) {
+                // List each allowed area, with option to remove
                 foreach (Area a in allowedIfInAreas) {
-                    bool tmp=true; // can do this MUCH better - with color!
+                    bool tmp=true; // TODO: can do this MUCH better - with color!
                     Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
                            "LWM.RS.AnyoneWithArea".Translate(AreaUtility.AreaAllowedLabel_Area(a)), ref tmp);
                     y+=22f;
@@ -184,8 +185,10 @@ namespace LWM.RestrictedStorage
                 }
                 if (needToRemove) allowedIfInAreas.Remove(toRemove);
             }
-            if (allowedIfNotInAreas!=null) { //oh hey, it's stupid to have more than one...whatever.
-                //TODO: This isnot actually checked, BROKEN
+            if (allowedIfNotInAreas!=null) {
+                // Show list of Areas...list should only be 0 or 1
+            
+                 //oh hey, it's stupid to have more than one...whatever.
                 //TODO: If more than one is set...uncheck the other one!
                 needToRemove=false;
                 foreach (Area a in allowedIfNotInAreas) {
@@ -193,7 +196,7 @@ namespace LWM.RestrictedStorage
                     Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
                             "LWM.RS.AnyoneWithoutArea".Translate(AreaUtility.AreaAllowedLabel_Area(a)), ref tmp);
                     y+=22f;
-                    if (!tmp) toRemove=a;
+                    if (!tmp) { toRemove = a; needToRemove = true; }
                 }
                 if (needToRemove) allowedIfNotInAreas.Remove(toRemove);
             }
