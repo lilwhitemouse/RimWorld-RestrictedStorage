@@ -165,7 +165,7 @@ namespace LWM.RestrictedStorage
             }
             GUI.color=tmpColor;
 
-            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.AreaControl"))
+            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.AreaControl".Translate()))
                 Find.WindowStack.Add(new Dialog_SpecifyAreas(this.parent.Map, this));
             y+=22f;
 //todo: add buttons / info here
@@ -188,7 +188,7 @@ namespace LWM.RestrictedStorage
             if (allowedIfNotInAreas!=null) {
                 // Show list of Areas...list should only be 0 or 1
             
-                 //oh hey, it's stupid to have more than one...whatever.
+                 //oh hey, it's stupid to have more than one...whatever.....actually, wait, it's okay
                 //TODO: If more than one is set...uncheck the other one!
                 // Rather...TODO: Check to make sure this works sensibly - 
                 //   If they are in none of the disallowed areas they are okay?
@@ -207,7 +207,7 @@ namespace LWM.RestrictedStorage
                     if (allowedIfNotInAreas.Count == 0) allowedIfNotInAreas = null;
                 }
             }
-            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.PawnControl"))
+            if (Widgets.ButtonText(new Rect(0,y,w,22), "LWM.RS.PawnControl".Translate()))
                 Find.WindowStack.Add(new Dialog_SpecifyPawns(this));
             y+=22f;
             Pawn pawnToRemove=null;

@@ -26,7 +26,7 @@
   <LWM.RS.AnimalsThatGrazeDesc>Note that this includes animals that eat trees! Like Thrumbos. Note that if an animal can both graze AND eat corpses, then it still qualifies here, because it CAN graze</LWM.RS.AnimalsThatGrazeDesc>
   <LWM.RS.AnimalsThatDoNotGrazeDesc>Meat eaters, typically.</LWM.RS.AnimalsThatDoNotGrazeDesc>
   <LWM.RS.AnimalsThatEatFleshDesc>Mmm, the tasty tasty flesh of innocent animals! When you think about it, eating meat is kinda far out there. Very RimWorld, I guess?</LWM.RS.AnimalsThatEatFleshDesc>
-  <LWM.RS.AnimalsThatEatNoMeat>There's this really fun song by Solstice Assembly called Vegan Fight Song. You can find a version online if you look! BTW, the songwriter lives in NC, where BBQ is a BIG thing, so that puts one line into reference. Anyway,\nthis is specifically animals that CANNOT eat meat - so if an animal can both graze and chomp on corpses, it won't qualify here</LWM.RS.AnimalsThatEatNoMeat>
+  <LWM.RS.AnimalsThatEatNoMeatDesc>There's this really fun song by Solstice Assembly called Vegan Fight Song. You can find a version online if you look! BTW, the songwriter lives in NC, where BBQ is a BIG thing, so that puts one line into reference. Anyway,\nthis is specifically animals that CANNOT eat meat - so if an animal can both graze and chomp on corpses, it won't qualify here</LWM.RS.AnimalsThatEatNoMeatDesc>
   <!-- -->
   <LWM.RS.AreaControl>Area Control</LWM.RS.AreaControl>
   <LWM.RS.AnyoneWithArea>Anyone with area {0}</LWM.RS.AnyoneWithArea>
@@ -38,8 +38,8 @@
   <!-- area dialog -->
   <LWM.RS.AreaControlLabel>Specify Access Control by Area</LWM.RS.AreaControlLabel>
   <LWM.RS.AreaControlLabelTwo>Contents are available to any colonists/animals who</LWM.RS.AreaControlLabelTwo><!-- note acts as sentence with two following options -->
-  <LWM.RS.AreaInAreAllowed>ARE allowed in:</LWM.RS.AreaInAreAllowed>
-  <LWM.RS.AreaNotInAreAllowed>ARE NOT allowed in:</LWM.RS.AreaNotInAreAllowed>
+  <LWM.RS.AreaInAreAllowed>ARE in these areas:</LWM.RS.AreaInAreAllowed>
+  <LWM.RS.AreaNotInAreAllowed>but NOT to anyone in these:</LWM.RS.AreaNotInAreAllowed>
   
   
 </LanguageData>
