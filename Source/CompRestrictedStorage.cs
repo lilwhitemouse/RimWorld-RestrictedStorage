@@ -190,6 +190,8 @@ namespace LWM.RestrictedStorage
             
                  //oh hey, it's stupid to have more than one...whatever.
                 //TODO: If more than one is set...uncheck the other one!
+                // Rather...TODO: Check to make sure this works sensibly - 
+                //   If they are in none of the disallowed areas they are okay?
                 needToRemove=false;
                 foreach (Area a in allowedIfNotInAreas) {
                     bool tmp=true; // can do this MUCH better - with color!
@@ -201,6 +203,7 @@ namespace LWM.RestrictedStorage
                 if (needToRemove)
                 {
                     allowedIfNotInAreas.Remove(toRemove);
+                    //TODO: do this always
                     if (allowedIfNotInAreas.Count == 0) allowedIfNotInAreas = null;
                 }
             }
@@ -209,9 +212,11 @@ namespace LWM.RestrictedStorage
             y+=22f;
             Pawn pawnToRemove=null;
             if (allowedPawns != null) {
+                // List allowed pawns:
                 foreach (Pawn p in allowedPawns) {
                     bool tmp=true;
-                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "Allowed: "+p.Name, ref tmp);
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
+                          "LWM.RS.AllowedPawn".Translate(p.Name.ToString()), ref tmp);
                     y+=22;
                     if (!tmp) {
                         pawnToRemove=p; // can't remove things mid-foreach
@@ -220,10 +225,12 @@ namespace LWM.RestrictedStorage
                 if (pawnToRemove!=null) allowedPawns.Remove(pawnToRemove);
             }
             if (disallowedPawns != null) {
+                // now list dis-allowed pawns:
                 pawnToRemove=null;
                 foreach (Pawn p in disallowedPawns) {
                     bool tmp=true;
-                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), "NOT allowed: "+p.Name, ref tmp);
+                    Widgets.CheckboxLabeled(new Rect(20f,y,w-20f,22), 
+                          "LWM.RS.NotAllowedPawn".Translate(p.Name.ToString()), ref tmp);
                     y+=22;
                     if (!tmp) {
                         pawnToRemove=p; // can't remove things mid-foreach

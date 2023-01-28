@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <LWM.RS.Restriction>Access</LWM.RS.Restriction><!-- ITab label -->
+  <!-- ITab options: -->
+  <LWM.RS.Anyone>Anyone May Take?</LWM.RS.Anyone>
+  <LWM.RS.AnyoneDesc>Check this to allow anyone to take from this storage site.\nUncheck to allow only those specifically allowed to take things here.</LWM.RS.AnyoneDesc>
+  <LWM.RS.Noone>No one May Take?</LWM.RS.Noone>
+  <LWM.RS.NooneDesc>If this is checked, NO ONE may take anything from here.  This overrides everything else.</LWM.RS.NooneDesc>
+  
+  <LWM.RS.WhoMayTake>Who may take from here?</LWM.RS.WhoMayTake><!--  who is *allowed* to take -->
+  <LWM.RS.AllHumans>All Humans</LWM.RS.AllHumans>
+  <LWM.RS.AllHumansDesc>Humans, humanlike, all xenotypes (if you have Biotech), etc</LWM.RS.AllHumansDesc>
+  <!--CaravanColonists -> Colonists-->
+  <!--<LWM.RS.ColonistsDesc>All of your regular colonists</LWM.RS.ColonistsDesc>-->
+  <!--SlavesSection -> Slaves -->
+  <!--<LWM.RS.SlavesDesc>All of your enslaved colonists-->
+  <LWM.RS.Guests>Guests</LWM.RS.Guests><!-- No plural Guests in the language files? Only TabGuest...which is singular-->
+  <LWM.RS.PrisonersDesc>Honestly, I cannot think of a single thing this will do, but maybe you have some way to make it useful?</LWM.RS.PrisonersDesc>
+  <LWM.RS.AllAnimals>All Animals</LWM.RS.AllAnimals>
+  <LWM.RS.AllAnimalsDesc>This only applies to YOUR animals - wild animals don't give a **** about what you want them to do\nNote: some robot mods are actually animals, so :shrug:</LWM.RS.AllAnimalsDesc>
+  <!-- The following options are indented one step from "All Animals" and complete a phrase. Translate as you wish-->
+  <LWM.RS.AnimalsThatGraze>that can graze (plant eaters)</LWM.RS.AnimalsThatGraze>
+  <LWM.RS.AnimalsThatDoNotGraze>that cannot graze</LWM.RS.AnimalsThatDoNotGraze>
+  <LWM.RS.AnimalsThatEatFlesh>that eat meat</LWM.RS.AnimalsThatEatFlesh>
+  <LWM.RS.AnimalsThatEatNoMeat>that cannot eat meat</LWM.RS.AnimalsThatEatNoMeat>
+  <LWM.RS.AnimalsThatGrazeDesc>Note that this includes animals that eat trees! Like Thrumbos. Note that if an animal can both graze AND eat corpses, then it still qualifies here, because it CAN graze</LWM.RS.AnimalsThatGrazeDesc>
+  <LWM.RS.AnimalsThatDoNotGrazeDesc>Meat eaters, typically.</LWM.RS.AnimalsThatDoNotGrazeDesc>
+  <LWM.RS.AnimalsThatEatFleshDesc>Mmm, the tasty tasty flesh of innocent animals! When you think about it, eating meat is kinda far out there. Very RimWorld, I guess?</LWM.RS.AnimalsThatEatFleshDesc>
+  <LWM.RS.AnimalsThatEatNoMeat>There's this really fun song by Solstice Assembly called Vegan Fight Song. You can find a version online if you look! BTW, the songwriter lives in NC, where BBQ is a BIG thing, so that puts one line into reference. Anyway,\nthis is specifically animals that CANNOT eat meat - so if an animal can both graze and chomp on corpses, it won't qualify here</LWM.RS.AnimalsThatEatNoMeat>
+  <!-- -->
+  <LWM.RS.AreaControl>Area Control</LWM.RS.AreaControl>
+  <LWM.RS.AnyoneWithArea>Anyone with area {0}</LWM.RS.AnyoneWithArea>
+  <LWM.RS.AnyoneWithoutArea>Any area BESIDES {0}</LWM.RS.AnyoneWithoutArea>
+  <!-- -->
+  <LWM.RS.PawnControl>Pawn Control</LWM.RS.PawnControl>
+  <LWM.RS.AllowedPawn>Allowed: {0}</LWM.RS.AllowedPawn><!-- I.e., Pawn {0} is allowed to take -->
+  <LWM.RS.NotAllowedPawn>NOT allowed: {0}</LWM.RS.NotAllowedPawn>
+  <!-- area dialog -->
+  <LWM.RS.AreaControlLabel>Specify Access Control by Area</LWM.RS.AreaControlLabel>
+  <LWM.RS.AreaControlLabelTwo>Contents are available to any colonists/animals who</LWM.RS.AreaControlLabelTwo><!-- note acts as sentence with two following options -->
+  <LWM.RS.AreaInAreAllowed>ARE allowed in:</LWM.RS.AreaInAreAllowed>
+  <LWM.RS.AreaNotInAreAllowed>ARE NOT allowed in:</LWM.RS.AreaNotInAreAllowed>
+  
+  
 </LanguageData>

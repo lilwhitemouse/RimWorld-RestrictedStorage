@@ -20,16 +20,17 @@ namespace LWM.RestrictedStorage
             this.closeOnClickedOutside=true;
             this.forcePause=true;
             this.resizeable=true;
-            this.optionalTitle="Specify Access Control by Area";//TODO: translate entire thing...
+            this.optionalTitle="LWM.RS.AreaControlLabel".Translate();
         }
         public override void DoWindowContents(Rect inRect) { //todo: much better info
             //make big
             Rect r=new Rect(0,0,inRect.width, 22);
             Rect rl=new Rect(1,22,inRect.width/2-11,22); // to fit over 1/2 innerRect below
             Rect rr=new Rect(inRect.width/2-10,22,inRect.width/2,22);
-            Widgets.Label(r, "Contents are available to any colonists/animals who");
-            Widgets.Label(rl, "ARE allowed in:");
-            Widgets.Label(rr, "ARE NOT allowed in:");
+            Widgets.Label(r, "LWM.RS.AreaControlLabelTwo".Translate());
+            // Header labels for each half:
+            Widgets.Label(rl, "LWM.RS.AreaInAreAllowed".Translate());//ARE allowed in:
+            Widgets.Label(rr, "LWM.RS.AreaNotInAreAllowed".Translate());// ARE NOT allowed in
 
             r = new Rect(1,44,inRect.width-1, inRect.height-48-48); //-height-button
             Rect innerRect=new Rect(0,0,inRect.width-20,totalHeight); // room for scroll bar
